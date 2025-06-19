@@ -1,0 +1,44 @@
+cppmath/
+│
+├── include/                    # All public headers
+│   └── cppmath/
+│       ├── linalg.hpp
+│       ├── calculus.hpp
+│       ├── number_theory.hpp
+│       ├── algebra.hpp
+│       ├── graph.hpp
+│       ├── numerics.hpp
+│       ├── combinatorics.hpp
+│       ├── stats.hpp
+│       ├── geometry.hpp
+│       ├── sets.hpp
+│       └── utils.hpp           # Common types/helpers
+│
+├── src/                        # Source files
+│   ├── linalg/
+│   │   ├── matrix.cpp
+│   │   ├── vector.cpp
+│   │   └── decomposition.cpp
+│   ├── calculus/
+│   ├── number_theory/
+│   ├── algebra/
+│   ├── graph/
+│   ├── numerics/
+│   ├── combinatorics/
+│   ├── stats/
+│   ├── geometry/
+│   └── sets/
+│
+├── tests/                      # Unit tests for each module
+│   ├── test_linalg.cpp
+│   ├── test_calculus.cpp
+│   └── ...
+│
+├── examples/                   # Example programs
+│   └── ml_pipeline.cpp
+│
+├── benchmarks/                 # Optional: profiling and performance
+│
+├── CMakeLists.txt              # Build system
+├── README.md
+└── LICENSE

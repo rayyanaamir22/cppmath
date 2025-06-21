@@ -1,4 +1,5 @@
 #include "cppmath/linalg.hpp"
+#include <iostream>
 
 namespace cppmath {
 namespace linalg {
@@ -34,10 +35,34 @@ size_t Matrix<T>::rows() const { return m_rows; }
 template<typename T>
 size_t Matrix<T>::cols() const { return m_cols; }
 
+// Matrix multiplication operator*
+template<typename T>
+Matrix<T> Matrix<T>::operator*(const Matrix<T>& other) const {
+    if (m_cols != other.m_rows) {
+        std::cerr << "Matrix multiplication error: incompatible dimensions ("
+                  << m_rows << "x" << m_cols << " * "
+                  << other.m_rows << "x" << other.m_cols << ")\n";
+        return Matrix<T>(0, 0);
+    }
+    // standard matmul algorithm (non-vectorized)
+    // TODO: implement a SIMD-vectorized alternative
+    Matrix<T> result(m_rows, other.m_cols);
+    for (size_t i = 0; i < m_rows; ++i) {
+        for (size_t j = 0; j < other.m_cols; ++j) {
+            T sum = T();
+            for (size_t k = 0; k < m_cols; ++k) {
+                sum += (*this)(i, k) * other(k, j);
+            }
+            result(i, j) = sum;
+        }
+    }
+    return result;
+}
+
 // Explicit instantiations for common types (uncomment if needed for separate compilation)
-// template class Matrix<int>;
-// template class Matrix<float>;
-// template class Matrix<double>;
+template class Matrix<int>;
+template class Matrix<float>;
+template class Matrix<double>;
 
 } // namespace linalg
 } // namespace cppmath

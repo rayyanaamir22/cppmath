@@ -50,6 +50,14 @@ public:
      */
     size_t cols() const;
 
+    /**
+     * @brief Multiplies this matrix by another matrix and returns the result.
+     *        Logs an error if dimensions are incompatible.
+     * @param other The matrix to multiply with.
+     * @return Resulting matrix after multiplication.
+     */
+    Matrix<T> operator*(const Matrix<T>& other) const;
+
 private:
     /**
      * @brief Number of rows in the matrix.

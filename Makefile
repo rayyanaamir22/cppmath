@@ -2,7 +2,7 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -Iinclude -Iinclude/doctest/doctest
 
-all: test_matrix test_graph test_solver test_vector
+all: test_matrix test_graph test_root test_vector test_combo test_prime
 
 test_matrix: tests/linalg/test_matrix.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $<
@@ -16,11 +16,19 @@ test_root: tests/numerics/test_root.cpp src/numerics/root.cpp
 test_vector: tests/linalg/test_vector.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
+test_combo: tests/combinatorics/test_combo.cpp src/combinatorics/combo.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+test_prime: tests/number_theory/test_prime.cpp src/number_theory/prime.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
 test: all
 	./test_matrix
 	./test_graph
 	./test_root
 	./test_vector
+	./test_combo
+	./test_prime
 
 clean:
-	rm -f test_matrix test_graph test_root test_vector 
+	rm -f test_matrix test_graph test_root test_vector test_combo test_prime 

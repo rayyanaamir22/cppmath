@@ -1,6 +1,20 @@
 # cppmath
 A math library in C++, supporting numerous concepts I've learned as a math major :p
 
+## Cloning this repository
+
+This project uses git submodules (for doctest). To clone with all dependencies, use:
+
+```sh
+git clone --recurse-submodules <repo-url>
+```
+
+If you already cloned without submodules, run:
+
+```sh
+git submodule update --init --recursive
+```
+
 ## Running Tests
 
 To build and run all tests:

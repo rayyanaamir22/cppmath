@@ -8,6 +8,15 @@ namespace cppmath {
     // Add graph function declarations here
 
         /**
+         * @struct GraphNode
+         * @brief Represents a vertex in the graph, with pointers to adjacent vertices.
+         */
+        struct GraphNode {
+            size_t index; ///< Unique index of the node
+            std::vector<GraphNode*> neighbors; ///< Pointers to adjacent nodes
+        };
+
+        /**
          * @class Graph
          * @brief Represents an undirected, unweighted graph using an adjacency list.
          *
@@ -52,15 +61,26 @@ namespace cppmath {
                  * @brief Returns the number of edges in the graph.
                  */
                 size_t num_edges() const;
-            private:
-                /**
-                 * @brief Adjacency list: m_adj[i] contains the neighbors of vertex i.
-                 */
-                std::vector<std::vector<size_t>> m_adj;
 
                 /**
-                 * @brief The total number of edges in the graph.
+                 * @brief Returns a const reference to the vector of GraphNode objects.
                  */
+                const std::vector<GraphNode>& nodes() const;
+
+                /**
+                 * @brief Returns a const reference to the adjacency matrix.
+                 *        The matrix is a vector of vector<bool>.
+                 */
+                const std::vector<std::vector<bool>>& adjacency_matrix() const;
+
+                /**
+                 * @brief Returns a const reference to the adjacency list (vector of vectors of indices).
+                 */
+                const std::vector<std::vector<size_t>>& adjacency_list() const;
+            private:
+                std::vector<GraphNode> m_nodes; ///< List of all nodes
+                std::vector<std::vector<size_t>> m_adj_list; ///< Adjacency list (indices)
+                std::vector<std::vector<bool>> m_adj_matrix; ///< Adjacency matrix
                 size_t m_edges;
         };
     }

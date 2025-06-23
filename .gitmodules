@@ -1,0 +1,3 @@
+[submodule "include/doctest"]
+	path = include/doctest
+	url = https://github.com/doctest/doctest.git

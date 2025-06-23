@@ -1,5 +1,5 @@
 #include <iostream>
-#include "cppmath/graph.hpp"
+#include "cppmath/graph/graph.hpp"
 #include <cstddef>  // for size_t
 #include <vector>   // for std::vector
 

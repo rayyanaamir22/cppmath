@@ -2,7 +2,7 @@
  * @file graph.cpp
  * @brief Graph algorithms implementation.
  */
-#include "cppmath/graph.hpp"
+#include "cppmath/graph/graph.hpp"
 
 namespace cppmath {
     namespace graph {

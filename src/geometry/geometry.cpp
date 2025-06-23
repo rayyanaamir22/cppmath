@@ -2,7 +2,7 @@
  * @file geometry.cpp
  * @brief Geometry functions implementation.
  */
-#include "cppmath/geometry.hpp"
+#include "cppmath/geometry/geometry.hpp"
 
 namespace cppmath {
 namespace geometry {

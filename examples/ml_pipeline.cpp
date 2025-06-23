@@ -1,5 +1,5 @@
 #include <iostream>
-#include "cppmath/linalg.hpp"
+#include "cppmath/linalg/matrix.hpp"
 
 int main() {
     cppmath::linalg::Matrix<double> m(2, 2);

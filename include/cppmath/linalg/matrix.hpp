@@ -76,5 +76,46 @@ private:
     std::vector<T> m_data;
 };
 
+// Method definitions for Matrix<T>
+
+template<typename T>
+Matrix<T>::Matrix(size_t rows, size_t cols)
+    : m_rows(rows), m_cols(cols), m_data(rows * cols) {}
+
+template<typename T>
+T& Matrix<T>::operator()(size_t i, size_t j) {
+    return m_data[i * m_cols + j];
+}
+
+template<typename T>
+const T& Matrix<T>::operator()(size_t i, size_t j) const {
+    return m_data[i * m_cols + j];
+}
+
+template<typename T>
+size_t Matrix<T>::rows() const { return m_rows; }
+
+template<typename T>
+size_t Matrix<T>::cols() const { return m_cols; }
+
+template<typename T>
+Matrix<T> Matrix<T>::operator*(const Matrix<T>& other) const {
+    if (m_cols != other.m_rows) {
+        // Optionally, throw or handle error
+        return Matrix<T>(0, 0);
+    }
+    Matrix<T> result(m_rows, other.m_cols);
+    for (size_t i = 0; i < m_rows; ++i) {
+        for (size_t j = 0; j < other.m_cols; ++j) {
+            T sum = T();
+            for (size_t k = 0; k < m_cols; ++k) {
+                sum += (*this)(i, k) * other(k, j);
+            }
+            result(i, j) = sum;
+        }
+    }
+    return result;
+}
+
 } // namespace linalg
 } // namespace cppmath

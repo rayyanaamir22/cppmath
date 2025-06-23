@@ -2,7 +2,7 @@
  * @file diff.cpp
  * @brief Differentiation functions implementation.
  */
-#include "cppmath/calculus.hpp"
+#include "cppmath/calculus/diff.hpp"
 
 namespace cppmath {
 namespace calculus {

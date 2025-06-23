@@ -1,6 +1,6 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
-#include "cppmath/graph.hpp"
+#include "cppmath/graph/graph.hpp"
 
 TEST_CASE("Graph vertex and edge operations") {
     cppmath::graph::Graph g;

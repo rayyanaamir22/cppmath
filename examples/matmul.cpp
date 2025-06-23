@@ -1,5 +1,5 @@
 #include <iostream>
-#include "cppmath/linalg.hpp"
+#include "cppmath/linalg/matrix.hpp"
 
 using cppmath::linalg::Matrix;
 

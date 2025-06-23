@@ -2,7 +2,7 @@
  * @file combo.cpp
  * @brief Combinatorics functions implementation.
  */
-#include "cppmath/combinatorics.hpp"
+#include "cppmath/combinatorics/combo.hpp"
 
 namespace cppmath {
 namespace combinatorics {

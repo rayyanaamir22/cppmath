@@ -2,7 +2,7 @@
  * @file solver.cpp
  * @brief Numerical solver functions implementation.
  */
-#include "cppmath/numerics.hpp"
+#include "cppmath/numerics/solver.hpp"
 
 namespace cppmath {
 namespace numerics {

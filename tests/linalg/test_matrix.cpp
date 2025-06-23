@@ -1,6 +1,6 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
-#include "cppmath/linalg.hpp"
+#include "cppmath/linalg/matrix.hpp"
 
 TEST_CASE("Matrix construction and access") {
     cppmath::linalg::Matrix<int> m(2, 3);

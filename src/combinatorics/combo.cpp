@@ -9,16 +9,23 @@ namespace cppmath {
 namespace combinatorics {
 
 unsigned long long fibonacci(unsigned int n) {
-    // TODO: replace w memoization
-    // basic recursion
-    if (n == 1) {
-        return 0;
-    } else if (n < 4) {
-        return 1;
+    // memoized dp approach
+    if (n < 1) {
+        throw std::runtime_error("n must be at least 1");
     }
-    else {
-        return fibonacci(n-1) + fibonacci(n-2);
+    // use static vector for memoization
+    static std::vector<unsigned long long> memo = {0, 0, 1}; // memo[1]=0, memo[2]=1, memo[3]=1
+
+    // base cases
+    if (n < memo.size()) {
+        return memo[n];
     }
+
+    // compute and memoize missing values up to n
+    for (unsigned int i = memo.size(); i <= n; ++i) {
+        memo.push_back(memo[i-1] + memo[i-2]);
+    }
+    return memo[n];
 }
 
 unsigned long long factorial(unsigned int n) {
@@ -33,7 +40,23 @@ unsigned long long factorial(unsigned int n) {
 
 std::vector<unsigned long long> fibonacci_sequence(unsigned long long limit) {
     // TODO: Implement Fibonacci sequence generation
-    throw std::runtime_error("fibonacci_sequence() not yet implemented");
+    if (n < 1) {
+        throw std::runtime_error("n must be at least 1");
+    }
+    // use static vector for memoization
+    static std::vector<unsigned long long> memo = {0, 0, 1}; // memo[1]=0, memo[2]=1, memo[3]=1
+
+    // base cases
+    if (n < memo.size()) {
+        return memo[n];
+    }
+
+    // compute and memoize missing values up to n
+    for (unsigned int i = memo.size(); i <= n; ++i) {
+        memo.push_back(memo[i-1] + memo[i-2]);
+    }
+
+    return memo;
 }
 
 unsigned long long binomial_coefficient(unsigned int n, unsigned int k) {

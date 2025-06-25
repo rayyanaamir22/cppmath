@@ -19,7 +19,7 @@ test_vector: tests/linalg/test_vector.cpp
 test_combo: tests/combinatorics/test_combo.cpp src/combinatorics/combo.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
-test_prime: tests/number_theory/test_prime.cpp src/number_theory/prime.cpp
+test_prime: tests/number_theory/test_prime.cpp src/number_theory/prime.cpp src/numerics/root.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 test: all

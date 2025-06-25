@@ -11,13 +11,17 @@ namespace cppmath {
 namespace number_theory {
 
 bool is_prime(unsigned long long n) {
+    if (n == 2) return true;
+    if (n < 2 || n % 2 == 0) return false;
+
     // sieve of eratosthenes approach
 
     // sqrt of n, rounded down
     unsigned long long sqrt_n = static_cast<unsigned long long>(std::floor(cppmath::numerics::newton_sqrt(n)));
 
-    // check if anything from 2 to sqrt_n (floored) divides n
-    for (size_t i = 2; i < sqrt_n; i++) {
+    // check if anything odd from 3 to sqrt_n (floored) divides n
+    // at this point, we know n isn't even
+    for (unsigned long long i = 3; i <= sqrt_n; i += 2) {
         if (n % i == 0) {
             return false; // something divided it
         }
@@ -25,31 +29,16 @@ bool is_prime(unsigned long long n) {
 }
 
 std::vector<unsigned long long> generate_primes(unsigned long long limit) {
-    if (limit < 1) {
-        throw std::runtime_error("limit must be greater than 0");
+    if (limit < 2) {
+        return {};
     }
-
     std::vector<unsigned long long> primes;
-
-    if (limit < 4) {
-        // i.e. limit = 1, 2, 3
-        for (size_t i = 1; i <= limit; i++) {
-            primes.push_back(i);
-        }
-        return primes;
-    }
-
-    // Add 1 and 2
-    primes.push_back(1);
     primes.push_back(2);
-    
-    // Check odd numbers from 3 to limit
-    for (size_t i = 3; i <= limit; i += 2) {
+    for (unsigned long long i = 3; i <= limit; i += 2) {
         if (is_prime(i)) {
             primes.push_back(i);
         }
     }
-    
     return primes;
 }
 
@@ -86,65 +75,24 @@ std::vector<unsigned long long> prime_factorization(unsigned long long n) {
     if (n < 1) {
         throw std::runtime_error("n must be greater than 0");
     }
-
-    // list of prime factors
-    std::vector<unsigned long long> prime_factors;
-
-    // n itself is prime, so it's the only factor
-    if (is_prime(n)) {
-        prime_factors.push_back(n);
-        return prime_factors;
+    std::vector<unsigned long long> factors;
+    // Handle 2 separately
+    while (n % 2 == 0) {
+        factors.push_back(2);
+        n /= 2;
     }
-    else {
-        // even case
-        if (n % 2 == 0) {
-            // reduce even numbers (repeatedly divide by 2)
-            while (n % 2 == 0) {
-                n = n / 2;
-                prime_factors.push_back(2);
-            }
-            // get prime factors of remaining odd number
-            std::vector<unsigned long long> odd_remainder_prime_factors = prime_factorization(n);
-            // concatenate them
-            prime_factors.insert( 
-                prime_factors.end(), 
-                odd_remainder_prime_factors.begin(), 
-                odd_remainder_prime_factors.end() 
-            );
-            return prime_factors;
+    // Handle odd factors
+    for (unsigned long long i = 3; i * i <= n; i += 2) {
+        while (n % i == 0) {
+            factors.push_back(i);
+            n /= i;
         }
-
-        // odd case (n > 2)
-
-        // get sqrt
-        unsigned long long sqrt_floored = static_cast<unsigned long long>(std::floor(cppmath::numerics::newton_sqrt(n)));
-
-        // get primes up to sqrt (all are candidates)
-        std::vector<unsigned long long> primes_to_test = generate_primes(sqrt_floored);
-
-        // check when remainder
-        unsigned long long remainder = n;
-
-        // The loop below starts at the largest index (last prime in the list) and decrements down to 0.
-        // It allows us to check for prime factors starting from the biggest candidate down to the smallest.
-
-        // attempt to divide by largest primes first
-        for (size_t i = primes_to_test.size(); i-- > 0; ) {
-            unsigned long long p = primes_to_test[i];
-            if (p == 1 || p == 2) continue; // skip 1 and 2; trivial cases
-            if (p * p > remainder) break;
-            while (remainder % p == 0) {
-                prime_factors.push_back(p);
-                remainder /= p;
-            }
-        }
-
-        // if remainder is still greater than 1, it is prime
-        if (remainder > 1) {
-            prime_factors.push_back(remainder);
-        }
-        return prime_factors;
     }
+    // If n is a prime number > 2
+    if (n > 1) {
+        factors.push_back(n);
+    }
+    return factors;
 }
 
 } // namespace number_theory

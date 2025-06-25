@@ -70,46 +70,50 @@ TEST_CASE("Prime testing - is_prime()") {
     CHECK(cppmath::number_theory::is_prime(99) == false);
     
     // Test edge cases
-    CHECK(cppmath::number_theory::is_prime(1) == true);  // Note: implementation treats 1 as prime
-    CHECK(cppmath::number_theory::is_prime(0) == true);  // Note: implementation treats 0 as prime
+    CHECK(cppmath::number_theory::is_prime(1) == false);
+    CHECK(cppmath::number_theory::is_prime(0) == false);
 }
 
 TEST_CASE("Prime generation - generate_primes()") {
     // Test small limits
+    auto primes0 = cppmath::number_theory::generate_primes(0);
+    CHECK(primes0.size() == 0);
+    
     auto primes1 = cppmath::number_theory::generate_primes(1);
     CHECK(primes1.size() == 0);
     
     auto primes2 = cppmath::number_theory::generate_primes(2);
     CHECK(primes2.size() == 1);
-    CHECK(primes2[0] == 1);
+    CHECK(primes2[0] == 2);
     
     auto primes3 = cppmath::number_theory::generate_primes(3);
     CHECK(primes3.size() == 2);
-    CHECK(primes3[0] == 1);
-    CHECK(primes3[1] == 2);
+    CHECK(primes3[0] == 2);
+    CHECK(primes3[1] == 3);
     
     // Test larger limits
     auto primes10 = cppmath::number_theory::generate_primes(10);
     CHECK(primes10.size() == 4);
-    CHECK(primes10[0] == 1);
-    CHECK(primes10[1] == 2);
-    CHECK(primes10[2] == 3);
-    CHECK(primes10[3] == 5);
+    CHECK(primes10[0] == 2);
+    CHECK(primes10[1] == 3);
+    CHECK(primes10[2] == 5);
+    CHECK(primes10[3] == 7);
     
     auto primes20 = cppmath::number_theory::generate_primes(20);
     CHECK(primes20.size() == 8);
-    std::vector<unsigned long long> expected20 = {1, 2, 3, 5, 7, 11, 13, 17};
+    std::vector<unsigned long long> expected20 = {2, 3, 5, 7, 11, 13, 17, 19};
     CHECK(primes20 == expected20);
     
     auto primes30 = cppmath::number_theory::generate_primes(30);
     CHECK(primes30.size() == 10);
-    std::vector<unsigned long long> expected30 = {1, 2, 3, 5, 7, 11, 13, 17, 19, 23};
+    std::vector<unsigned long long> expected30 = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29};
     CHECK(primes30 == expected30);
 }
 
 TEST_CASE("Prime generation - error handling") {
-    // Test invalid input
-    CHECK_THROWS_AS(cppmath::number_theory::generate_primes(0), std::runtime_error);
+    // Test invalid input (should not throw, just return empty)
+    auto primes0 = cppmath::number_theory::generate_primes(0);
+    CHECK(primes0.empty());
 }
 
 TEST_CASE("Next prime - next_prime()") {

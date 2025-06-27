@@ -1,12 +1,78 @@
 #pragma once
 #include <vector>
 #include <stdexcept>
+#include "../abstract_algebra/VectorElement.hpp"
 
 /**
  * @brief Vector operations and utilities.
  */
 namespace cppmath {
 namespace linalg {
+
+/**
+ * @brief A vector class representing a vector in F^n (n-dimensional vector space over field F).
+ * Inherits from VectorElement to provide algebraic structure.
+ */
+class Vector : public abstract_algebra::VectorElement {
+private:
+    std::vector<double> components;
+    size_t dimension;
+
+public:
+    // Constructors
+    Vector() : dimension(0) {}
+    Vector(size_t dim) : dimension(dim), components(dim, 0.0) {}
+    Vector(const std::vector<double>& comps) : components(comps), dimension(comps.size()) {}
+    Vector(std::initializer_list<double> comps) : components(comps), dimension(comps.size()) {}
+    
+    // Copy constructor
+    Vector(const Vector& other) : components(other.components), dimension(other.dimension) {}
+    
+    // Destructor
+    ~Vector() override = default;
+    
+    // Assignment operator
+    Vector& operator=(const Vector& other);
+    
+    // Access operators
+    double& operator[](size_t index);
+    const double& operator[](size_t index) const;
+    
+    // Vector operations
+    Vector operator+(const Vector& other) const;
+    Vector operator-(const Vector& other) const;
+    Vector operator*(double scalar) const;
+    Vector operator/(double scalar) const;
+    
+    // Compound assignment operators
+    Vector& operator+=(const Vector& other);
+    Vector& operator-=(const Vector& other);
+    Vector& operator*=(double scalar);
+    Vector& operator/=(double scalar);
+    
+    // Comparison operators
+    bool operator==(const Vector& other) const;
+    bool operator!=(const Vector& other) const;
+    
+    // VectorElement interface implementation
+    VectorElement* add(const VectorElement& other) const override;
+    VectorElement* scalar_multiply(double scalar) const override;
+    
+    // Additional vector operations
+    double dot_product(const Vector& other) const;
+    Vector cross_product(const Vector& other) const;
+    double magnitude() const;
+    Vector normalize() const;
+    
+    // Utility methods
+    size_t size() const { return dimension; }
+    bool is_zero() const;
+    void resize(size_t new_dim);
+    void clear();
+    
+    // Friend functions for scalar multiplication
+    friend Vector operator*(double scalar, const Vector& vec);
+};
 
 /**
  * @brief Computes the dot product of two vectors.

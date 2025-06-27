@@ -2,6 +2,15 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -Iinclude -Iinclude/doctest/doctest
 
+# Benchmark build flags (add AVX for SIMD on x86_64 only)
+ARCH := $(shell uname -m)
+ifeq ($(ARCH),x86_64)
+    BENCH_CXXFLAGS = $(CXXFLAGS) -O3 -mavx
+else
+    BENCH_CXXFLAGS = $(CXXFLAGS) -O3
+endif
+BENCHMARKS := $(patsubst benchmarks/%.cpp,benchmarks/%,$(wildcard benchmarks/*/*.cpp))
+
 all: test_matrix test_graph test_root test_vector test_combo test_prime vector_demo
 
 test_matrix: tests/linalg/test_matrix.cpp
@@ -35,3 +44,22 @@ test: all
 
 clean:
 	rm -f test_matrix test_graph test_root test_vector test_combo test_prime vector_demo 
+
+# Pattern rule for benchmarks (benchmarks/<subdir>/<file>.cpp -> benchmarks/<subdir>/<file>)
+benchmarks/%: benchmarks/%.cpp src/linalg/vector.cpp
+	$(CXX) $(BENCH_CXXFLAGS) -o $@ $^
+
+# Build all benchmarks
+benchmarks: $(BENCHMARKS)
+
+# Run all benchmarks
+run-benchmarks: benchmarks
+	@for bm in $(BENCHMARKS); do \
+		echo "Running $$bm:"; \
+		./$$bm; \
+	echo "----------------------"; \
+	done
+
+# Usage:
+#   make benchmarks        # Build all benchmarks in benchmarks/*/*.cpp
+#   make run-benchmarks    # Build and run all benchmarks 

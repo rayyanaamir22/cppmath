@@ -2,6 +2,9 @@
 #include <cmath>
 #include <algorithm>
 #include <stdexcept>
+#if defined(__x86_64__) || defined(_M_X64)
+#include <immintrin.h>
+#endif
 
 namespace cppmath {
 namespace linalg {
@@ -32,26 +35,72 @@ const double& Vector::operator[](size_t index) const {
 
 // Vector operations
 Vector Vector::operator+(const Vector& other) const {
-    if (dimension != other.dimension) {
-        throw std::invalid_argument("Vectors must have the same dimension for addition");
-    }
-    
-    Vector result(dimension);
-    for (size_t i = 0; i < dimension; ++i) {
-        result.components[i] = components[i] + other.components[i];
-    }
-    return result;
+    return vector_add(other, false);
 }
 
 Vector Vector::operator-(const Vector& other) const {
+    return vector_sub(other, false);
+}
+
+Vector Vector::vector_add(const Vector& other, bool vectorize) const {
+    if (dimension != other.dimension) {
+        throw std::invalid_argument("Vectors must have the same dimension for addition");
+    }
+    Vector result(dimension);
+#if defined(__x86_64__) || defined(_M_X64)
+    if (vectorize && dimension >= 4) {
+        size_t i = 0;
+        for (; i + 3 < dimension; i += 4) {
+            __m256d a = _mm256_loadu_pd(&components[i]);
+            __m256d b = _mm256_loadu_pd(&other.components[i]);
+            __m256d c = _mm256_add_pd(a, b);
+            _mm256_storeu_pd(&result.components[i], c);
+        }
+        for (; i < dimension; ++i) {
+            result.components[i] = components[i] + other.components[i];
+        }
+    } else {
+        for (size_t i = 0; i < dimension; ++i) {
+            result.components[i] = components[i] + other.components[i];
+        }
+    }
+#else
+    // Scalar fallback for non-x86 platforms
+    for (size_t i = 0; i < dimension; ++i) {
+        result.components[i] = components[i] + other.components[i];
+    }
+#endif
+    return result;
+}
+
+Vector Vector::vector_sub(const Vector& other, bool vectorize) const {
     if (dimension != other.dimension) {
         throw std::invalid_argument("Vectors must have the same dimension for subtraction");
     }
-    
     Vector result(dimension);
+#if defined(__x86_64__) || defined(_M_X64)
+    if (vectorize && dimension >= 4) {
+        size_t i = 0;
+        for (; i + 3 < dimension; i += 4) {
+            __m256d a = _mm256_loadu_pd(&components[i]);
+            __m256d b = _mm256_loadu_pd(&other.components[i]);
+            __m256d c = _mm256_sub_pd(a, b);
+            _mm256_storeu_pd(&result.components[i], c);
+        }
+        for (; i < dimension; ++i) {
+            result.components[i] = components[i] - other.components[i];
+        }
+    } else {
+        for (size_t i = 0; i < dimension; ++i) {
+            result.components[i] = components[i] - other.components[i];
+        }
+    }
+#else
+    // Scalar fallback for non-x86 platforms
     for (size_t i = 0; i < dimension; ++i) {
         result.components[i] = components[i] - other.components[i];
     }
+#endif
     return result;
 }
 
@@ -76,24 +125,48 @@ Vector Vector::operator/(double scalar) const {
 }
 
 // Compound assignment operators
-Vector& Vector::operator+=(const Vector& other) {
+Vector& Vector::operator+=(const Vector& other, bool vectorize) {
     if (dimension != other.dimension) {
         throw std::invalid_argument("Vectors must have the same dimension for addition");
     }
-    
-    for (size_t i = 0; i < dimension; ++i) {
-        components[i] += other.components[i];
+    if (vectorize && dimension >= 4) {
+        size_t i = 0;
+        for (; i + 3 < dimension; i += 4) {
+            __m256d a = _mm256_loadu_pd(&components[i]);
+            __m256d b = _mm256_loadu_pd(&other.components[i]);
+            a = _mm256_add_pd(a, b);
+            _mm256_storeu_pd(&components[i], a);
+        }
+        for (; i < dimension; ++i) {
+            components[i] += other.components[i];
+        }
+    } else {
+        for (size_t i = 0; i < dimension; ++i) {
+            components[i] += other.components[i];
+        }
     }
     return *this;
 }
 
-Vector& Vector::operator-=(const Vector& other) {
+Vector& Vector::operator-=(const Vector& other, bool vectorize) {
     if (dimension != other.dimension) {
         throw std::invalid_argument("Vectors must have the same dimension for subtraction");
     }
-    
-    for (size_t i = 0; i < dimension; ++i) {
-        components[i] -= other.components[i];
+    if (vectorize && dimension >= 4) {
+        size_t i = 0;
+        for (; i + 3 < dimension; i += 4) {
+            __m256d a = _mm256_loadu_pd(&components[i]);
+            __m256d b = _mm256_loadu_pd(&other.components[i]);
+            a = _mm256_sub_pd(a, b);
+            _mm256_storeu_pd(&components[i], a);
+        }
+        for (; i < dimension; ++i) {
+            components[i] -= other.components[i];
+        }
+    } else {
+        for (size_t i = 0; i < dimension; ++i) {
+            components[i] -= other.components[i];
+        }
     }
     return *this;
 }

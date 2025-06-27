@@ -3,6 +3,7 @@
 #include "cppmath/linalg/vector.hpp"
 #include <vector>
 #include <stdexcept>
+#include <iostream>
 
 using namespace cppmath::linalg;
 
@@ -313,4 +314,29 @@ TEST_CASE("VectorElement Interface") {
     CHECK((*vec_scaled)[1] == 4.0);
     CHECK((*vec_scaled)[2] == 6.0);
     delete scaled;
+}
+
+TEST_CASE("Vector SIMD addition and subtraction") {
+    using cppmath::linalg::Vector;
+    // Small vector (no SIMD)
+    Vector a({1.0, 2.0, 3.0});
+    Vector b({4.0, 5.0, 6.0});
+    CHECK((a + b) == Vector({5.0, 7.0, 9.0}));
+    CHECK((a - b) == Vector({-3.0, -3.0, -3.0}));
+    // Large vector (SIMD)
+    std::vector<double> va(1000, 1.0);
+    std::vector<double> vb(1000, 2.0);
+    Vector la(va), lb(vb);
+    Vector sum = la.vector_add(lb, false);
+    Vector sum_simd = la.vector_add(lb, true);
+    for (size_t i = 0; i < 1000; ++i) {
+        CHECK(sum[i] == doctest::Approx(3.0));
+        CHECK(sum_simd[i] == doctest::Approx(3.0));
+    }
+    Vector diff = la.vector_sub(lb, false);
+    Vector diff_simd = la.vector_sub(lb, true);
+    for (size_t i = 0; i < 1000; ++i) {
+        CHECK(diff[i] == doctest::Approx(-1.0));
+        CHECK(diff_simd[i] == doctest::Approx(-1.0));
+    }
 } 

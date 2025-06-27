@@ -72,6 +72,21 @@ public:
     
     // Friend functions for scalar multiplication
     friend Vector operator*(double scalar, const Vector& vec);
+    
+    /**
+     * @brief Adds two vectors, optionally using SIMD vectorization.
+     * @param other The vector to add.
+     * @param vectorize Whether to use SIMD vectorization.
+     * @return The sum vector.
+     */
+    Vector vector_add(const Vector& other, bool vectorize) const;
+    /**
+     * @brief Subtracts two vectors, optionally using SIMD vectorization.
+     * @param other The vector to subtract.
+     * @param vectorize Whether to use SIMD vectorization.
+     * @return The difference vector.
+     */
+    Vector vector_sub(const Vector& other, bool vectorize) const;
 };
 
 /**

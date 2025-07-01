@@ -6,7 +6,7 @@
 using namespace cppmath::graph;
 
 int main() {
-    // Simulate a business case: offices and their direct communication links
+    // Simulate a business case: map of offices and their direct communication links
     // Offices: 0 - HQ, 1 - BranchA, 2 - BranchB, 3 - BranchC
     Graph g;
     size_t hq = g.add_vertex();      // 0

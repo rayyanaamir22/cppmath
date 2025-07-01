@@ -79,6 +79,12 @@ namespace cppmath {
                  * @brief Returns a const reference to the adjacency list (vector of vectors of indices).
                  */
                 const std::vector<std::vector<size_t>>& adjacency_list() const;
+
+                /**
+                 * @brief Checks if the graph is a tree (connected and acyclic).
+                 * @return True if the graph is a tree, false otherwise.
+                 */
+                bool is_tree() const;
             private:
                 std::vector<GraphNode> m_nodes; ///< List of all nodes
                 std::vector<std::vector<size_t>> m_adj_list; ///< Adjacency list (indices)

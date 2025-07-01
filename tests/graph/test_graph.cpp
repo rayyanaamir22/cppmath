@@ -110,3 +110,28 @@ TEST_CASE("Self-loop and Duplicate Edge Prevention") {
     CHECK(g.num_edges() == 1);
 }
 
+TEST_CASE("is_tree method (unimplemented)") {
+    cppmath::graph::Graph g;
+    g.add_vertex();
+    g.add_vertex();
+    g.add_edge(0, 1);
+    CHECK_THROWS_AS(g.is_tree(), std::logic_error);
+
+    // Empty graph
+    cppmath::graph::Graph empty;
+    CHECK_THROWS_AS(empty.is_tree(), std::logic_error);
+
+    // Single vertex
+    cppmath::graph::Graph single;
+    single.add_vertex();
+    CHECK_THROWS_AS(single.is_tree(), std::logic_error);
+
+    // Cycle graph (not a tree)
+    cppmath::graph::Graph cycle;
+    for (int i = 0; i < 3; ++i) cycle.add_vertex();
+    cycle.add_edge(0, 1);
+    cycle.add_edge(1, 2);
+    cycle.add_edge(2, 0);
+    CHECK_THROWS_AS(cycle.is_tree(), std::logic_error);
+}
+

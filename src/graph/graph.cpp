@@ -83,5 +83,11 @@ namespace cppmath {
         }
 
         // Add graph algorithm implementations here
+
+        // Checks if the graph is a tree (connected and acyclic).
+        bool Graph::is_tree() const {
+            // Not yet implemented
+            throw std::logic_error("is_tree() is not implemented yet");
+        }
     }
 } 

@@ -24,5 +24,7 @@ public:
     virtual bool is_commutative(const StructureType& structure) const = 0;
 };
 
+// Note: Operations like Addition and Multiplication should inherit from AlgebraicOperation for use in fields.
+
 } // namespace abstract_algebra
 } // namespace cppmath 

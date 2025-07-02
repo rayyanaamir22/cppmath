@@ -11,7 +11,13 @@ else
 endif
 BENCHMARKS := $(patsubst benchmarks/%.cpp,benchmarks/%,$(wildcard benchmarks/*/*.cpp))
 
-all: test_matrix test_graph test_root test_vector test_combo test_prime vector_demo test_finite_field
+all: test_matrix test_graph test_root test_vector test_combo test_prime test_finite_field vector_demo
+
+field_demo: examples/field_demo.cpp src/abstract_algebra/field/Field.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+vector_demo: examples/vector_demo.cpp src/linalg/vector.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^
 
 test_matrix: tests/linalg/test_matrix.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $<
@@ -29,9 +35,6 @@ test_combo: tests/combinatorics/test_combo.cpp src/combinatorics/combo.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 test_prime: tests/number_theory/test_prime.cpp src/number_theory/prime.cpp src/numerics/root.cpp
-	$(CXX) $(CXXFLAGS) -o $@ $^
-
-vector_demo: examples/vector_demo.cpp src/linalg/vector.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 test_finite_field: tests/abstract_algebra/field/test_finite_field.cpp src/abstract_algebra/field/Field.cpp

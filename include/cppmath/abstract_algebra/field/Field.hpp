@@ -16,29 +16,25 @@ namespace abstract_algebra {
 // Abstract base for fields. Requires addition and multiplication operations.
 // Concrete fields must implement these operations and provide them via addition_op() and multiplication_op().
 
-// Forward declarations for operations
-class Addition;
-class Multiplication;
-
-// Example: FiniteField and FiniteFieldElement for a prime field (mod p)
-class FiniteField;
-class FiniteFieldElement;
+// (Removed global forward declarations for Addition, Multiplication, FiniteField, FiniteFieldElement)
 
 // Addition and Multiplication should be implemented as subclasses of AlgebraicOperation for the field.
 
-template<typename ElementType>
+template<typename Derived, typename ElementType>
 class Field : public AlgebraicStructure<ElementType> {
 public:
     using AlgebraicStructure<ElementType>::AlgebraicStructure;
     virtual ~Field() = default;
     // Get the addition operation
-    virtual const AlgebraicOperation<ElementType, Field<ElementType>>& addition_op() const = 0;
+    virtual const AlgebraicOperation<ElementType, Derived>& addition_op() const = 0;
     // Get the multiplication operation
-    virtual const AlgebraicOperation<ElementType, Field<ElementType>>& multiplication_op() const = 0;
+    virtual const AlgebraicOperation<ElementType, Derived>& multiplication_op() const = 0;
     // Add field-specific virtual methods as needed
 };
 
 namespace example {
+
+class FiniteField;
 
 class Addition : public AlgebraicOperation<FiniteFieldElement, FiniteField> {
 public:
@@ -56,7 +52,7 @@ public:
     bool is_commutative(const FiniteField& field) const override;
 };
 
-class FiniteField : public Field<FiniteFieldElement> {
+class FiniteField : public Field<FiniteField, FiniteFieldElement> {
     int p_;
     Addition add_op_;
     Multiplication mul_op_;

@@ -9,7 +9,7 @@ using namespace cppmath::abstract_algebra;
 using namespace cppmath::abstract_algebra::example;
 
 // --- Addition ---
-Addition::Addition() : AlgebraicOperation("Addition", 2) {}
+Addition::Addition() : cppmath::abstract_algebra::AlgebraicOperation<FiniteFieldElement, FiniteField>("Addition", 2) {}
 FiniteFieldElement Addition::operate(const FiniteFieldElement& a, const FiniteFieldElement& b, const FiniteField& field) const {
     int sum = (a.int_value() + b.int_value()) % field.modulus();
     return FiniteFieldElement(a.parent_structure(), sum);
@@ -18,7 +18,7 @@ bool Addition::is_associative(const FiniteField&) const { return true; }
 bool Addition::is_commutative(const FiniteField&) const { return true; }
 
 // --- Multiplication ---
-Multiplication::Multiplication() : AlgebraicOperation("Multiplication", 2) {}
+Multiplication::Multiplication() : cppmath::abstract_algebra::AlgebraicOperation<FiniteFieldElement, FiniteField>("Multiplication", 2) {}
 FiniteFieldElement Multiplication::operate(const FiniteFieldElement& a, const FiniteFieldElement& b, const FiniteField& field) const {
     int prod = (a.int_value() * b.int_value()) % field.modulus();
     return FiniteFieldElement(a.parent_structure(), prod);
@@ -48,7 +48,7 @@ std::vector<FiniteFieldElement> FiniteField::elements() const {
 // --- FiniteFieldElement ---
 FiniteFieldElement::FiniteFieldElement(std::shared_ptr<const FiniteField> parent, int value)
     : FieldElement(parent, value % parent->modulus()) {}
-int FiniteFieldElement::int_value() const { return static_cast<int>(value_); }
+int FiniteFieldElement::int_value() const { return value_; }
 FiniteFieldElement FiniteFieldElement::add(const FiniteFieldElement& other, const FiniteField& field) const {
     return field.addition_op().operate(*this, other, field);
 }

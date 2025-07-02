@@ -21,9 +21,9 @@ namespace abstract_algebra {
 template<typename Derived, typename StructureType>
 class FieldElement : public AlgebraicElement<Derived, StructureType> {
 protected:
-    double value_;
+    int value_;
 public:
-    FieldElement(std::shared_ptr<const StructureType> parent_structure = nullptr, double value = 0.0)
+    FieldElement(std::shared_ptr<const StructureType> parent_structure = nullptr, int value = 0)
         : AlgebraicElement<Derived, StructureType>(parent_structure), value_(value) {}
     virtual ~FieldElement() = default;
     // Add two field elements
@@ -33,7 +33,7 @@ public:
     // Return the multiplicative inverse
     virtual Derived inverse(const StructureType& structure) const = 0;
     // Add more field element-specific virtual methods as needed
-    virtual double value() const override { return value_; }
+    virtual int value() const override { return value_; }
     virtual bool equals(const Derived& other) const override { return value_ == other.value(); }
     virtual Derived operate(const Derived& other, const StructureType& structure) const override {
         return structure.addition_op().operate(static_cast<const Derived&>(*this), other, structure);
@@ -44,9 +44,6 @@ public:
 // Note: Concrete FieldElement implementations should use the addition and multiplication operations from their parent Field structure.
 
 // Forward declarations for example
-class FiniteField;
-class FiniteFieldElement;
-
 namespace example {
 class FiniteFieldElement;
 }

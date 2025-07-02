@@ -11,7 +11,7 @@ else
 endif
 BENCHMARKS := $(patsubst benchmarks/%.cpp,benchmarks/%,$(wildcard benchmarks/*/*.cpp))
 
-all: test_matrix test_graph test_root test_vector test_combo test_prime vector_demo
+all: test_matrix test_graph test_root test_vector test_combo test_prime vector_demo test_finite_field
 
 test_matrix: tests/linalg/test_matrix.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $<
@@ -34,6 +34,9 @@ test_prime: tests/number_theory/test_prime.cpp src/number_theory/prime.cpp src/n
 vector_demo: examples/vector_demo.cpp src/linalg/vector.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
+test_finite_field: tests/abstract_algebra/field/test_finite_field.cpp src/abstract_algebra/field/Field.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
 test: all
 	./test_matrix
 	./test_graph
@@ -41,9 +44,10 @@ test: all
 	./test_vector
 	./test_combo
 	./test_prime
+	./test_finite_field
 
 clean:
-	rm -f test_matrix test_graph test_root test_vector test_combo test_prime vector_demo 
+	rm -f test_matrix test_graph test_root test_vector test_combo test_prime vector_demo test_finite_field 
 
 # Pattern rule for benchmarks (benchmarks/<subdir>/<file>.cpp -> benchmarks/<subdir>/<file>)
 benchmarks/%: benchmarks/%.cpp src/linalg/vector.cpp

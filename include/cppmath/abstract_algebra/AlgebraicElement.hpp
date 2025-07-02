@@ -17,7 +17,7 @@ public:
     // Abstract: check equality
     virtual bool equals(const Derived& other) const = 0;
     // Abstract: get value (to be defined by derived class)
-    virtual auto value() const -> decltype(auto) = 0;
+    virtual int value() const = 0;
     // Abstract: operate with another element
     virtual Derived operate(const Derived& other, const StructureType& structure) const = 0;
 };

@@ -9,10 +9,10 @@ using namespace cppmath::abstract_algebra;
 using namespace cppmath::abstract_algebra::example;
 
 // --- Addition ---
-Addition::Addition() : cppmath::abstract_algebra::AlgebraicOperation<FiniteFieldElement, FiniteField>("Addition", 2) {}
-FiniteFieldElement Addition::operate(const FiniteFieldElement& a, const FiniteFieldElement& b, const FiniteField& field) const {
-    int sum = (a.int_value() + b.int_value()) % field.modulus();
-    return FiniteFieldElement(a.parent_structure(), sum);
+Addition::Addition() : cppmath::abstract_algebra::AlgebraicOperation<FiniteFieldElement, FiniteField>("Addition", 2) {} // base class AlgebraicOperation constructor for Addition
+FiniteFieldElement Addition::operate(const FiniteFieldElement& a, const FiniteFieldElement& b, const FiniteField& field) const { // Implements operate for Addition
+    int sum = (a.int_value() + b.int_value()) % field.modulus(); // Computes sum modulo field modulus
+    return FiniteFieldElement(a.parent_structure(), sum); // Returns new FiniteFieldElement with computed sum
 }
 bool Addition::is_associative(const FiniteField&) const { return true; }
 bool Addition::is_commutative(const FiniteField&) const { return true; }

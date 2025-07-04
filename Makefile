@@ -13,7 +13,7 @@ BENCHMARKS := $(patsubst benchmarks/%.cpp,benchmarks/%,$(wildcard benchmarks/*/*
 
 # Define groups
 TESTS = test_matrix test_graph test_root test_vector test_combo test_prime test_finite_field
-EXAMPLES = field_demo vector_demo group_demo
+EXAMPLES = field_demo vector_demo group_demo ring_demo
 
 all: $(TESTS) $(EXAMPLES)
 
@@ -45,6 +45,9 @@ test_finite_field: tests/abstract_algebra/field/test_finite_field.cpp src/abstra
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 group_demo: examples/group_demo.cpp src/abstract_algebra/group/Group.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+ring_demo: examples/ring_demo.cpp src/abstract_algebra/ring/Ring.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 test: $(TESTS)

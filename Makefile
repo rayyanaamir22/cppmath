@@ -53,6 +53,9 @@ ring_demo: examples/ring_demo.cpp src/abstract_algebra/ring/Ring.cpp
 vsp_demo: examples/vsp_demo.cpp src/abstract_algebra/vector/VectorSpace.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
+lie_demo: examples/lie_demo.cpp src/abstract_algebra/lie/Lie.cpp
+	$(CXX) -std=c++17 -Iinclude -o lie_demo examples/lie_demo.cpp src/abstract_algebra/lie/Lie.cpp
+
 test: $(TESTS)
 	@for t in $(TESTS); do ./$$t; done
 

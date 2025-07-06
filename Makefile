@@ -13,7 +13,7 @@ BENCHMARKS := $(patsubst benchmarks/%.cpp,benchmarks/%,$(wildcard benchmarks/*/*
 
 # Define groups
 TESTS = test_matrix test_graph test_root test_vector test_combo test_prime test_finite_field
-EXAMPLES = field_demo vector_demo group_demo ring_demo vsp_demo
+EXAMPLES = field_demo vector_demo group_demo ring_demo vsp_demo set_demo
 
 all: $(TESTS) $(EXAMPLES)
 
@@ -55,6 +55,9 @@ vsp_demo: examples/vsp_demo.cpp src/abstract_algebra/vector/VectorSpace.cpp
 
 lie_demo: examples/lie_demo.cpp src/abstract_algebra/lie/Lie.cpp
 	$(CXX) -std=c++17 -Iinclude -o lie_demo examples/lie_demo.cpp src/abstract_algebra/lie/Lie.cpp
+
+set_demo: examples/set_demo.cpp src/sets/IntervalSet.cpp src/sets/FiniteSet.cpp src/sets/UnionSet.cpp src/sets/IntersectionSet.cpp src/sets/EmptySet.cpp src/sets/UniversalSet.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^
 
 test: $(TESTS)
 	@for t in $(TESTS); do ./$$t; done

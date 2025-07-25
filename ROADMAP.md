@@ -19,4 +19,14 @@ This document outlines future directions and optimization ideas for the cppmath 
 - **Parallel Algorithms**: Explore parallelization for large-scale algebraic computations.
 
 ## Symbolic Calculus Framework
-The set and expression string representations, designed for AST parsing, lay the groundwork for a future symbolic calculus framework. This will enable advanced symbolic manipulation, differentiation, integration, and function analysis using a unified AST-based approach. 
+The set and expression string representations, designed for AST parsing, lay the groundwork for a future symbolic calculus framework. This will enable advanced symbolic manipulation, differentiation, integration, and function analysis using a unified AST-based approach.
+
+## Progress
+- Created a `src/core` folder with starter implementations for:
+  - `Expression` (abstract base for symbolic expressions)
+  - `Variable` (symbolic variable)
+  - `Constant` (numeric constant)
+  - `BinaryOperations` (Add, Multiply, Power)
+  - `UnaryOperations` (Sin, Cos, Exp, Log)
+  - `Function` (symbolic function object with domain/codomain as sets)
+- These form the foundation for a symbolic system and future AST-based calculus engine. 

@@ -23,9 +23,10 @@ The set and expression string representations, designed for AST parsing, lay the
 
 ## Progress
 - Created a `src/core` folder with starter implementations for:
-  - `Expression` (abstract base for symbolic expressions)
+  - `Expression` (abstract base for symbolic expressions)  <-- TODO
   - `Variable` (symbolic variable)
   - `Constant` (numeric constant)
+  - `Operator` (abstract base class with arbitrary number of input and output variables)  <-- TODO
   - `BinaryOperations` (Add, Multiply, Power)
   - `UnaryOperations` (Sin, Cos, Exp, Log)
   - `Function` (symbolic function object with domain/codomain as sets)

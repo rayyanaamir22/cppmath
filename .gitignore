@@ -1,1 +1,10 @@
 a.out
+.DS_Store
+.vscode/
+
+# build outputs (Makefile writes binaries to repo root)
+test_*
+!tests/**/test_*.cpp
+*_demo
+benchmarks/*/bench_*
+!benchmarks/*/bench_*.cpp

@@ -293,27 +293,12 @@ TEST_CASE("Vector Utility Methods") {
     CHECK(v.size() == 0);
 }
 
-TEST_CASE("VectorElement Interface") {
+TEST_CASE("Named add / scalar_multiply") {
     Vector v1 = {1.0, 2.0, 3.0};
     Vector v2 = {4.0, 5.0, 6.0};
-    
-    // Test add method
-    auto* result = v1.add(v2);
-    Vector* vec_result = dynamic_cast<Vector*>(result);
-    CHECK(vec_result != nullptr);
-    CHECK((*vec_result)[0] == 5.0);
-    CHECK((*vec_result)[1] == 7.0);
-    CHECK((*vec_result)[2] == 9.0);
-    delete result;
-    
-    // Test scalar_multiply method
-    auto* scaled = v1.scalar_multiply(2.0);
-    Vector* vec_scaled = dynamic_cast<Vector*>(scaled);
-    CHECK(vec_scaled != nullptr);
-    CHECK((*vec_scaled)[0] == 2.0);
-    CHECK((*vec_scaled)[1] == 4.0);
-    CHECK((*vec_scaled)[2] == 6.0);
-    delete scaled;
+
+    CHECK(v1.add(v2) == Vector({5.0, 7.0, 9.0}));
+    CHECK(v1.scalar_multiply(2.0) == Vector({2.0, 4.0, 6.0}));
 }
 
 TEST_CASE("Vector SIMD addition and subtraction") {

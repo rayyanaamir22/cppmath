@@ -47,7 +47,7 @@ Modules: `abstract_algebra`, `core` (symbolic expressions), `sets`, `linalg`, `n
 ## Conventions
 
 - **Namespaces:** `cppmath::<module>`, e.g. `cppmath::linalg`, `cppmath::abstract_algebra`, `cppmath::sets`, `cppmath::core`. Example or demo concrete types go in a nested `example` namespace (e.g. `abstract_algebra::example::FiniteField`).
-- **Headers:** `#pragma once`. Include paths go from `include/`: `#include "cppmath/sets/Set.hpp"`. Prefer this over `../` relative includes; one of those is currently broken (see PLAN.md).
+- **Headers:** `#pragma once`. Include paths go from `include/`: `#include "cppmath/sets/Set.hpp"`. Prefer this over `../` relative includes (a stale one broke `Vector` once).
 - **Templates:** template definitions live in the header (e.g. `Matrix<T>` is header-only; `src/linalg/matrix.cpp` is intentionally empty).
 - **File naming:** class-per-file modules use `PascalCase.hpp` (`sets/`, `core/`, `abstract_algebra/`). Function-collection modules use `lowercase.hpp` (`prime.hpp`, `combo.hpp`, `root.hpp`).
 - **Docs:** Doxygen-style `/** @brief ... */` on public APIs.
@@ -80,8 +80,8 @@ The reference implementation is `linalg::Vector` in [src/linalg/vector.cpp](src/
 ## Testing
 
 - Tests use **doctest**: `#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN`, `#include "doctest.h"`, `TEST_CASE` / `SUBCASE` / `CHECK`. Compare floats with `doctest::Approx`.
-- `tests/core/test_expression.cpp` (and its identical twin `test_core.cpp`) is a print-only smoke test with no assertions. It needs to be converted to doctest (tracked in PLAN.md).
 - Run the relevant test target after any change, and `make test` before committing.
+- On macOS `make` is Apple's GNU Make 3.81 and `g++` is clang. If a build tool goes missing, check `which make g++`.
 
 ## Git
 

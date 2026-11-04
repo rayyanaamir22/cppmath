@@ -1,5 +1,7 @@
-#include <iostream>
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "doctest.h"
 #include <memory>
+#include <stdexcept>
 #include "cppmath/core/Expression.hpp"
 #include "cppmath/core/Variable.hpp"
 #include "cppmath/core/Constant.hpp"
@@ -11,61 +13,58 @@
 using namespace cppmath::core;
 using namespace cppmath::sets;
 
-int main() {
-    std::cout << "Testing core symbolic system..." << std::endl;
-    
-    // Test Constant
-    auto c1 = std::make_unique<Constant>(5.0);
-    auto c2 = std::make_unique<Constant>(3.0);
-    std::cout << "Constant(5.0): " << c1->toString() << " = " << c1->evaluate() << std::endl;
-    
-    // Test Variable
-    auto v1 = std::make_unique<Variable>("x");
-    std::cout << "Variable(x): " << v1->toString() << std::endl;
-    
-    // Test AddExpression
-    auto add = std::make_unique<AddExpression>(std::move(c1), std::move(c2));
-    std::cout << "AddExpression: " << add->toString() << " = " << add->evaluate() << std::endl;
-    
-    // Test MultiplyExpression
-    auto c3 = std::make_unique<Constant>(4.0);
-    auto c4 = std::make_unique<Constant>(2.0);
-    auto mul = std::make_unique<MultiplyExpression>(std::move(c3), std::move(c4));
-    std::cout << "MultiplyExpression: " << mul->toString() << " = " << mul->evaluate() << std::endl;
-    
-    // Test PowerExpression
-    auto c5 = std::make_unique<Constant>(2.0);
-    auto c6 = std::make_unique<Constant>(3.0);
-    auto pow = std::make_unique<PowerExpression>(std::move(c5), std::move(c6));
-    std::cout << "PowerExpression: " << pow->toString() << " = " << pow->evaluate() << std::endl;
-    
-    // Test UnaryOperations
-    auto c7 = std::make_unique<Constant>(1.0);
-    auto sin_exp = std::make_unique<SinExpression>(std::move(c7));
-    std::cout << "SinExpression: " << sin_exp->toString() << " = " << sin_exp->evaluate() << std::endl;
-    
-    auto c8 = std::make_unique<Constant>(0.0);
-    auto cos_exp = std::make_unique<CosExpression>(std::move(c8));
-    std::cout << "CosExpression: " << cos_exp->toString() << " = " << cos_exp->evaluate() << std::endl;
-    
-    auto c9 = std::make_unique<Constant>(1.0);
-    auto exp_exp = std::make_unique<ExpExpression>(std::move(c9));
-    std::cout << "ExpExpression: " << exp_exp->toString() << " = " << exp_exp->evaluate() << std::endl;
-    
-    auto c10 = std::make_unique<Constant>(2.718281828);
-    auto log_exp = std::make_unique<LogExpression>(std::move(c10));
-    std::cout << "LogExpression: " << log_exp->toString() << " = " << log_exp->evaluate() << std::endl;
-    
-    // Test Function
+namespace {
+std::unique_ptr<Expression> c(double v) { return std::make_unique<Constant>(v); }
+std::unique_ptr<Expression> x() { return std::make_unique<Variable>("x"); }
+}
+
+TEST_CASE("Constant and Variable") {
+    Constant k(5.0);
+    CHECK(k.evaluate() == doctest::Approx(5.0));
+
+    Variable v("x");
+    CHECK(v.toString() == "x");
+    CHECK_THROWS_AS(v.evaluate(), std::runtime_error);
+}
+
+TEST_CASE("Binary operations") {
+    AddExpression add(c(5.0), c(3.0));
+    CHECK(add.evaluate() == doctest::Approx(8.0));
+    CHECK(add.toString() == "(5 + 3)");
+
+    MultiplyExpression mul(c(4.0), c(2.0));
+    CHECK(mul.evaluate() == doctest::Approx(8.0));
+
+    PowerExpression pw(c(2.0), c(3.0));
+    CHECK(pw.evaluate() == doctest::Approx(8.0));
+    CHECK(pw.toString() == "(2 ^ 3)");
+}
+
+TEST_CASE("Unary operations") {
+    CHECK(SinExpression(c(0.0)).evaluate() == doctest::Approx(0.0));
+    CHECK(CosExpression(c(0.0)).evaluate() == doctest::Approx(1.0));
+    CHECK(ExpExpression(c(1.0)).evaluate() == doctest::Approx(2.718281828));
+    CHECK(LogExpression(c(2.718281828)).evaluate() == doctest::Approx(1.0));
+    CHECK(SinExpression(x()).toString() == "sin(x)");
+}
+
+TEST_CASE("clone produces an independent equal tree") {
+    AddExpression e(c(1.0), std::make_unique<MultiplyExpression>(c(2.0), c(3.0)));
+    auto copy = e.clone();
+    CHECK(copy->toString() == e.toString());
+    CHECK(copy->evaluate() == doctest::Approx(7.0));
+}
+
+TEST_CASE("Nested expression containing a variable cannot be evaluated") {
+    AddExpression e(x(), c(1.0));
+    CHECK(e.toString() == "(x + 1)");
+    CHECK_THROWS_AS(e.evaluate(), std::runtime_error);
+}
+
+TEST_CASE("Function holds domain, codomain and rule") {
     auto domain = IntervalSet::all_real();
     auto codomain = IntervalSet::all_real();
-    auto rule = std::make_unique<AddExpression>(
-        std::make_unique<Variable>("x"),
-        std::make_unique<Constant>(1.0)
-    );
-    Function f("f", domain.get(), codomain.get(), std::move(rule));
-    std::cout << "Function: " << f.toString() << std::endl;
-    
-    std::cout << "All tests completed successfully!" << std::endl;
-    return 0;
+    Function f("f", domain.get(), codomain.get(), std::make_unique<AddExpression>(x(), c(1.0)));
+    CHECK(f.name == "f");
+    CHECK(f.toString().find("f(x) = (x + 1)") != std::string::npos);
 }

@@ -85,22 +85,15 @@ int main() {
     v1.clear();
     std::cout << "    After v1.clear(): size = " << v1.size() << "\n\n";
     
-    // VectorElement interface demonstration
-    std::cout << "11. VectorElement interface:\n";
+    // Named add / scalar_multiply
+    std::cout << "11. Named add / scalar_multiply:\n";
     Vector v6 = {1.0, 2.0, 3.0};
     Vector v7 = {4.0, 5.0, 6.0};
-    
-    // Using the abstract interface
-    auto* result = v6.add(v7);
-    Vector* vec_result = dynamic_cast<Vector*>(result);
-    std::cout << "    v6.add(v7) = [" << (*vec_result)[0] << ", " << (*vec_result)[1] << ", " << (*vec_result)[2] << "]\n";
-    delete result;
-    
-    auto* scaled_result = v6.scalar_multiply(2.0);
-    Vector* vec_scaled = dynamic_cast<Vector*>(scaled_result);
-    std::cout << "    v6.scalar_multiply(2.0) = [" << (*vec_scaled)[0] << ", " << (*vec_scaled)[1] << ", " << (*vec_scaled)[2] << "]\n";
-    delete scaled_result;
-    
+    Vector v_sum = v6.add(v7);
+    Vector v_scaled = v6.scalar_multiply(2.0);
+    std::cout << "    v6.add(v7) = [" << v_sum[0] << ", " << v_sum[1] << ", " << v_sum[2] << "]\n";
+    std::cout << "    v6.scalar_multiply(2.0) = [" << v_scaled[0] << ", " << v_scaled[1] << ", " << v_scaled[2] << "]\n";
+
     std::cout << "\n=== Demonstration Complete ===\n";
     
     return 0;

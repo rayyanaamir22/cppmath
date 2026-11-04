@@ -125,48 +125,22 @@ Vector Vector::operator/(double scalar) const {
 }
 
 // Compound assignment operators
-Vector& Vector::operator+=(const Vector& other, bool vectorize) {
+Vector& Vector::operator+=(const Vector& other) {
     if (dimension != other.dimension) {
         throw std::invalid_argument("Vectors must have the same dimension for addition");
     }
-    if (vectorize && dimension >= 4) {
-        size_t i = 0;
-        for (; i + 3 < dimension; i += 4) {
-            __m256d a = _mm256_loadu_pd(&components[i]);
-            __m256d b = _mm256_loadu_pd(&other.components[i]);
-            a = _mm256_add_pd(a, b);
-            _mm256_storeu_pd(&components[i], a);
-        }
-        for (; i < dimension; ++i) {
-            components[i] += other.components[i];
-        }
-    } else {
-        for (size_t i = 0; i < dimension; ++i) {
-            components[i] += other.components[i];
-        }
+    for (size_t i = 0; i < dimension; ++i) {
+        components[i] += other.components[i];
     }
     return *this;
 }
 
-Vector& Vector::operator-=(const Vector& other, bool vectorize) {
+Vector& Vector::operator-=(const Vector& other) {
     if (dimension != other.dimension) {
         throw std::invalid_argument("Vectors must have the same dimension for subtraction");
     }
-    if (vectorize && dimension >= 4) {
-        size_t i = 0;
-        for (; i + 3 < dimension; i += 4) {
-            __m256d a = _mm256_loadu_pd(&components[i]);
-            __m256d b = _mm256_loadu_pd(&other.components[i]);
-            a = _mm256_sub_pd(a, b);
-            _mm256_storeu_pd(&components[i], a);
-        }
-        for (; i < dimension; ++i) {
-            components[i] -= other.components[i];
-        }
-    } else {
-        for (size_t i = 0; i < dimension; ++i) {
-            components[i] -= other.components[i];
-        }
+    for (size_t i = 0; i < dimension; ++i) {
+        components[i] -= other.components[i];
     }
     return *this;
 }
@@ -207,21 +181,9 @@ bool Vector::operator!=(const Vector& other) const {
     return !(*this == other);
 }
 
-// VectorElement interface implementation
-abstract_algebra::VectorElement* Vector::add(const abstract_algebra::VectorElement& other) const {
-    const Vector* other_vec = dynamic_cast<const Vector*>(&other);
-    if (!other_vec) {
-        throw std::invalid_argument("Cannot add incompatible vector types");
-    }
-    
-    Vector* result = new Vector(*this + *other_vec);
-    return result;
-}
-
-abstract_algebra::VectorElement* Vector::scalar_multiply(double scalar) const {
-    Vector* result = new Vector(*this * scalar);
-    return result;
-}
+// Named equivalents of the operators
+Vector Vector::add(const Vector& other) const { return *this + other; }
+Vector Vector::scalar_multiply(double scalar) const { return *this * scalar; }
 
 // Additional vector operations
 double Vector::dot_product(const Vector& other) const {

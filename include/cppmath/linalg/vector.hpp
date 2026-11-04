@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 #include <stdexcept>
-#include "../abstract_algebra/VectorElement.hpp"
 
 /**
  * @brief Vector operations and utilities.
@@ -11,9 +10,9 @@ namespace linalg {
 
 /**
  * @brief A vector class representing a vector in F^n (n-dimensional vector space over field F).
- * Inherits from VectorElement to provide algebraic structure.
+ * Concrete and standalone; not (yet) tied to abstract_algebra::VectorSpace.
  */
-class Vector : public abstract_algebra::VectorElement {
+class Vector {
 private:
     std::vector<double> components;
     size_t dimension;
@@ -29,7 +28,7 @@ public:
     Vector(const Vector& other) : components(other.components), dimension(other.dimension) {}
     
     // Destructor
-    ~Vector() override = default;
+    ~Vector() = default;
     
     // Assignment operator
     Vector& operator=(const Vector& other);
@@ -54,9 +53,9 @@ public:
     bool operator==(const Vector& other) const;
     bool operator!=(const Vector& other) const;
     
-    // VectorElement interface implementation
-    VectorElement* add(const VectorElement& other) const override;
-    VectorElement* scalar_multiply(double scalar) const override;
+    // Named equivalents of operator+ and operator*(double)
+    Vector add(const Vector& other) const;
+    Vector scalar_multiply(double scalar) const;
     
     // Additional vector operations
     double dot_product(const Vector& other) const;

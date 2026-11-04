@@ -1,42 +1,42 @@
 # cppmath
+
 A math library in C++, supporting numerous concepts I've learned as a math major :p
 
-## Cloning this repository
+Alongside the math, it's a playground for low-level acceleration in C++: SIMD intrinsics, cache-friendly layouts, and templates, each benchmarked against a plain scalar version.
 
-This project uses git submodules (for doctest). To clone with all dependencies, use:
+**What's in it:** abstract algebra (groups, rings, fields, vector spaces, Lie algebras), set theory, a symbolic expression core, linear algebra, numerics, number theory, combinatorics, and graph theory. See [PLAN.md](PLAN.md) for per-module status and the roadmap.
+
+## Getting started
+
+Uses git submodules (for [doctest](https://github.com/doctest/doctest)):
 
 ```sh
 git clone --recurse-submodules <repo-url>
-```
-
-If you already cloned without submodules, run:
-
-```sh
+# or, if already cloned:
 git submodule update --init --recursive
 ```
 
-## Running Tests
-
-To build and run all tests:
+## Build & test
 
 ```sh
-make test
-```
-
-To clean up test binaries:
-
-```sh
+make test             # build and run all tests
+make test_matrix      # build a single test, then ./test_matrix
+make all              # tests + examples (./group_demo, ./set_demo, ...)
+make run-benchmarks   # -O3 benchmarks, SIMD vs scalar
 make clean
 ```
 
-Or, to run the test commands directly (without Makefile):
+Without the Makefile:
 
 ```sh
-# Build and run Matrix tests
- g++ -std=c++17 -Iinclude -Iinclude/doctest/doctest -o test_matrix tests/linalg/test_matrix.cpp
- ./test_matrix
-
-# Build and run Graph tests
- g++ -std=c++17 -Iinclude -Iinclude/doctest/doctest -o test_graph tests/graph/test_graph.cpp
- ./test_graph
+g++ -std=c++17 -Iinclude -Iinclude/doctest/doctest -o test_graph tests/graph/test_graph.cpp src/graph/graph.cpp
+./test_graph
 ```
+
+## Docs
+
+- [PLAN.md](PLAN.md): status, known issues, roadmap
+- [CLAUDE.md](CLAUDE.md): repo conventions (layout, namespaces, SIMD and testing patterns)
+- [docs/architecture/abstract_algebra.md](docs/architecture/abstract_algebra.md): algebraic structure class hierarchy
+- [docs/architecture/sets.md](docs/architecture/sets.md): set class hierarchy
+- [benchmarks/benchmarks.md](benchmarks/benchmarks.md): benchmark notes

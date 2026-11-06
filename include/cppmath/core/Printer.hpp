@@ -19,7 +19,7 @@ namespace core {
  */
 std::string print(const Expression& expr);
 
-/** @brief Shortest decimal text that parses back to exactly `v` (e.g. 0.1 -> "0.1"). */
+/** @brief Shortest decimal text that parses back to exactly `v` (e.g. 0.1 -> "0.1"); see utils::format_number. */
 std::string format_number(double v);
 
 } // namespace core

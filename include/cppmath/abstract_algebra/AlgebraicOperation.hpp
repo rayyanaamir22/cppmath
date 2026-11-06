@@ -1,4 +1,5 @@
 #pragma once
+#include <stdexcept>
 #include <string>
 
 namespace cppmath {
@@ -37,6 +38,23 @@ public:
     virtual bool is_associative(const StructureType& structure) const = 0;
     /** @brief Whether a op b == b op a for all elements of `structure`. */
     virtual bool is_commutative(const StructureType& structure) const = 0;
+
+    /**
+     * @brief Whether this operation has an identity element e (a op e == a) in `structure`.
+     *
+     * Defaults to false. Operations such as the Lie bracket have no identity.
+     * Structures with several operations get one identity per operation, which is
+     * how a ring has both 0 (for +) and 1 (for *).
+     */
+    virtual bool has_identity(const StructureType&) const { return false; }
+
+    /**
+     * @brief The identity element of this operation in `structure`.
+     * @throws std::logic_error if the operation has no identity (`has_identity()` is false).
+     */
+    virtual ElementType identity(const StructureType&) const {
+        throw std::logic_error("operation '" + op_name_ + "' has no identity element");
+    }
 };
 
 // Note: Operations like Addition and Multiplication should inherit from AlgebraicOperation for use in fields.

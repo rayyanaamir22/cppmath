@@ -22,6 +22,16 @@ public:
     virtual const AlgebraicOperation<ElementType, Derived>& addition_op() const = 0;
     /** @brief The multiplicative operation *. */
     virtual const AlgebraicOperation<ElementType, Derived>& multiplication_op() const = 0;
+
+    /** @brief The additive identity 0: the identity of `addition_op()`. */
+    ElementType identity() const override {
+        return addition_op().identity(static_cast<const Derived&>(*this));
+    }
+
+    /** @brief The multiplicative identity 1: the identity of `multiplication_op()`. */
+    ElementType one() const {
+        return multiplication_op().identity(static_cast<const Derived&>(*this));
+    }
 };
 
 /** @brief Example concrete structures for tests and demos; not part of the abstract hierarchy. */
@@ -32,19 +42,27 @@ class IntegerMod4Element;
 class Mod4Addition;
 class Mod4Multiplication;
 
-/** @brief Addition mod 4. Associative and commutative. */
+/** @brief Addition mod 4. Associative and commutative; identity 0. */
 class Mod4Addition : public AlgebraicOperation<IntegerMod4Element, IntegerMod4> {
 public:
+    /// The binary operation, named "Mod4Addition".
     Mod4Addition();
+    bool has_identity(const IntegerMod4& ring) const override;
+    IntegerMod4Element identity(const IntegerMod4& ring) const override;
+    /** @brief (a + b) mod 4; the result's parent is a's parent. */
     IntegerMod4Element operate(const IntegerMod4Element& a, const IntegerMod4Element& b, const IntegerMod4& ring) const override;
     bool is_associative(const IntegerMod4& ring) const override;
     bool is_commutative(const IntegerMod4& ring) const override;
 };
 
-/** @brief Multiplication mod 4. Associative and commutative. */
+/** @brief Multiplication mod 4. Associative and commutative; identity 1. */
 class Mod4Multiplication : public AlgebraicOperation<IntegerMod4Element, IntegerMod4> {
 public:
+    /// The binary operation, named "Mod4Multiplication".
     Mod4Multiplication();
+    bool has_identity(const IntegerMod4& ring) const override;
+    IntegerMod4Element identity(const IntegerMod4& ring) const override;
+    /** @brief (a * b) mod 4; the result's parent is a's parent. */
     IntegerMod4Element operate(const IntegerMod4Element& a, const IntegerMod4Element& b, const IntegerMod4& ring) const override;
     bool is_associative(const IntegerMod4& ring) const override;
     bool is_commutative(const IntegerMod4& ring) const override;
@@ -59,11 +77,10 @@ class IntegerMod4 : public Ring<IntegerMod4, IntegerMod4Element> {
     Mod4Addition add_op_;
     Mod4Multiplication mul_op_;
 public:
+    /// The ring Z/4Z, named "Z/4Z" (order 4).
     IntegerMod4();
     const AlgebraicOperation<IntegerMod4Element, IntegerMod4>& addition_op() const override;
     const AlgebraicOperation<IntegerMod4Element, IntegerMod4>& multiplication_op() const override;
-    /** @brief Returns 1, the *multiplicative* identity (the additive one is 0). */
-    IntegerMod4Element identity() const override;
     /** @brief True if the element's value is in 0..3. */
     bool contains(const IntegerMod4Element& element) const override;
     /** @brief 0, 1, 2, 3. */
@@ -74,16 +91,15 @@ public:
 class IntegerMod4Element : public RingElement<IntegerMod4Element, IntegerMod4> {
 public:
     /**
-     * @param value reduced with C++ `%`, so a negative value stays negative
-     *              (and then fails IntegerMod4::contains).
+     * @param value any integer; reduced into 0..3, so -1 becomes 3.
      */
     IntegerMod4Element(std::shared_ptr<const IntegerMod4> parent, int value);
     /// The representative in 0..3.
     int int_value() const;
     /** @brief Sum mod 4, via the ring's addition operation. */
-    IntegerMod4Element add(const IntegerMod4Element& other, const IntegerMod4& ring) const;
+    IntegerMod4Element add(const IntegerMod4Element& other, const IntegerMod4& ring) const override;
     /** @brief Product mod 4, via the ring's multiplication operation. */
-    IntegerMod4Element multiply(const IntegerMod4Element& other, const IntegerMod4& ring) const;
+    IntegerMod4Element multiply(const IntegerMod4Element& other, const IntegerMod4& ring) const override;
 };
 
 } // namespace example

@@ -4,6 +4,7 @@
 #include "cppmath/sets/EmptySet.hpp"
 #include "cppmath/sets/UniversalSet.hpp"
 #include "cppmath/sets/IntervalSet.hpp"
+#include "cppmath/utils/format.hpp"
 #include <sstream>
 #include <algorithm>
 #include <iterator>
@@ -16,7 +17,7 @@ namespace sets {
 namespace {
 constexpr double EPSILON = 1e-9;
 bool double_eq(double a, double b) {
-    return std::fabs(a - b) < EPSILON;
+    return a == b || std::fabs(a - b) < EPSILON;
 }
 }
 
@@ -33,9 +34,11 @@ bool FiniteSet::contains(double value) const {
 std::unique_ptr<Set> FiniteSet::set_union(const Set& other) const {
     auto other_finite = dynamic_cast<const FiniteSet*>(&other);
     if (other_finite) {
-        std::set<double> result = elements;
-        result.insert(other_finite->elements.begin(), other_finite->elements.end());
-        return std::make_unique<FiniteSet>(std::vector<double>(result.begin(), result.end()));
+        // Skip values already present within tolerance, so {1} U {1 + 1e-12} stays {1}.
+        std::vector<double> result(elements.begin(), elements.end());
+        for (double v : other_finite->elements)
+            if (!contains(v)) result.push_back(v);
+        return std::make_unique<FiniteSet>(result);
     }
     return std::make_unique<UnionSet>(this->clone(), other.clone());
 }
@@ -43,11 +46,11 @@ std::unique_ptr<Set> FiniteSet::set_union(const Set& other) const {
 std::unique_ptr<Set> FiniteSet::intersect(const Set& other) const {
     auto other_finite = dynamic_cast<const FiniteSet*>(&other);
     if (other_finite) {
-        std::set<double> result;
-        std::set_intersection(elements.begin(), elements.end(),
-                              other_finite->elements.begin(), other_finite->elements.end(),
-                              std::inserter(result, result.begin()));
-        return std::make_unique<FiniteSet>(std::vector<double>(result.begin(), result.end()));
+        // Same tolerance as contains(): keep our values that the other set also contains.
+        std::vector<double> result;
+        for (double v : elements)
+            if (other_finite->contains(v)) result.push_back(v);
+        return std::make_unique<FiniteSet>(result);
     }
     return std::make_unique<IntersectionSet>(this->clone(), other.clone());
 }
@@ -78,7 +81,7 @@ std::string FiniteSet::toString() const {
     oss << "{";
     for (auto it = elements.begin(); it != elements.end(); ++it) {
         if (it != elements.begin()) oss << ", ";
-        oss << *it;
+        oss << utils::format_number(*it);
     }
     oss << "}";
     return oss.str();
@@ -99,17 +102,19 @@ bool FiniteSet::equals(const Set& other) const {
     return true;
 }
 
-void FiniteSet::add_element(double value) {
-    elements.insert(value);
+std::unique_ptr<FiniteSet> FiniteSet::with_element(double value) const {
+    std::vector<double> result(elements.begin(), elements.end());
+    if (!contains(value)) result.push_back(value);
+    return std::make_unique<FiniteSet>(result);
 }
-void FiniteSet::remove_element(double value) {
-    for (auto it = elements.begin(); it != elements.end(); ++it) {
-        if (double_eq(*it, value)) {
-            elements.erase(it);
-            break;
-        }
-    }
+
+std::unique_ptr<FiniteSet> FiniteSet::without_element(double value) const {
+    std::vector<double> result;
+    for (double v : elements)
+        if (!double_eq(v, value)) result.push_back(v);
+    return std::make_unique<FiniteSet>(result);
 }
+
 bool FiniteSet::is_empty() const {
     return elements.empty();
 }

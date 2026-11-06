@@ -38,7 +38,9 @@ class HeisenbergBracket;
  */
 class HeisenbergBracket : public AlgebraicOperation<HeisenbergElement, HeisenbergLie> {
 public:
+    /// The binary bracket operation, named "HeisenbergBracket".
     HeisenbergBracket();
+    /** @brief [a, b] = (0, 0, a.x*b.y - a.y*b.x); the result's parent is a's parent. */
     HeisenbergElement operate(const HeisenbergElement& a, const HeisenbergElement& b, const HeisenbergLie& lie) const override;
     bool is_associative(const HeisenbergLie& lie) const override;
     bool is_commutative(const HeisenbergLie& lie) const override;
@@ -52,6 +54,7 @@ public:
 class HeisenbergLie : public Lie<HeisenbergLie, HeisenbergElement> {
     HeisenbergBracket bracket_;
 public:
+    /// The Heisenberg algebra, named "Heisenberg" (order 0 = infinite).
     HeisenbergLie();
     /** @brief The Heisenberg bracket. */
     const AlgebraicOperation<HeisenbergElement, HeisenbergLie>& bracket_op() const override;
@@ -81,7 +84,7 @@ public:
      */
     HeisenbergElement(std::shared_ptr<const HeisenbergLie> parent, double x, double y, double z);
     /// The algebra this element was created with.
-    std::shared_ptr<const HeisenbergLie> parent_structure() const { return parent_; }
+    std::shared_ptr<const HeisenbergLie> parent_structure() const override { return parent_; }
     /// Coordinate along X.
     double x() const;
     /// Coordinate along Y.
@@ -89,9 +92,9 @@ public:
     /// Coordinate along Z.
     double z() const;
     /** @brief [*this, other], via the algebra's bracket operation. */
-    HeisenbergElement bracket(const HeisenbergElement& other, const HeisenbergLie& lie) const;
+    HeisenbergElement bracket(const HeisenbergElement& other, const HeisenbergLie& lie) const override;
     /** @brief Coordinate-wise equality within 1e-9. */
-    bool equals(const HeisenbergElement& other) const;
+    bool equals(const HeisenbergElement& other) const override;
 };
 
 } // namespace example

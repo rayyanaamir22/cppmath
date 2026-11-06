@@ -27,8 +27,9 @@ public:
     Signature() = default;
     Signature(const Signature&) = delete;            // Operator addresses are handed out; no copies
     Signature& operator=(const Signature&) = delete;
-    // Moving is safe: Operators live on the heap, so their addresses survive the move.
+    /** @brief Moving is allowed and safe: Operators live on the heap, so their addresses survive the move. */
     Signature(Signature&&) = default;
+    /** @brief Move assignment; see the move constructor. */
     Signature& operator=(Signature&&) = default;
 
     /**

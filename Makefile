@@ -12,7 +12,7 @@ endif
 BENCHMARKS := $(patsubst benchmarks/%.cpp,benchmarks/%,$(wildcard benchmarks/*/*.cpp))
 
 # Define groups - manually list tests for now (can be automated later)
-TESTS = test_matrix test_graph test_root test_vector test_combo test_prime test_finite_field \
+TESTS = test_matrix test_graph test_root test_vector test_combo test_prime test_finite_field test_structures test_sets \
 	test_signature test_expression test_traversal test_evaluate test_parser
 # Source groups. core is linked as a whole: its pieces depend on each other (the
 # printer behind Expression::toString, the Signature behind the builders, ...).
@@ -79,6 +79,12 @@ test_finite_field: tests/abstract_algebra/field/test_finite_field.cpp src/abstra
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 test_signature: tests/core/test_signature.cpp $(CORE_SRC) $(SETS_SRC)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+test_structures: tests/abstract_algebra/test_structures.cpp src/abstract_algebra/field/Field.cpp src/abstract_algebra/group/Group.cpp src/abstract_algebra/lie/Lie.cpp src/abstract_algebra/ring/Ring.cpp src/abstract_algebra/vector/VectorSpace.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+test_sets: tests/sets/test_sets.cpp $(SETS_SRC)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 test_expression: tests/core/test_expression.cpp $(CORE_SRC) $(SETS_SRC)

@@ -1,20 +1,11 @@
 #include "cppmath/core/Printer.hpp"
 #include "cppmath/core/Fold.hpp"
-#include <cstdio>
-#include <cstdlib>
+#include "cppmath/utils/format.hpp"
 
 namespace cppmath {
 namespace core {
 
-std::string format_number(double v) {
-    // Try increasing precision until the text round-trips; 17 digits always does.
-    char buf[40];
-    for (int precision = 15; precision <= 17; ++precision) {
-        std::snprintf(buf, sizeof buf, "%.*g", precision, v);
-        if (std::strtod(buf, nullptr) == v) break;
-    }
-    return buf;
-}
+std::string format_number(double v) { return utils::format_number(v); }
 
 std::string print(const Expression& expr) {
     return fold<std::string>(

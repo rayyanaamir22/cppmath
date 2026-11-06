@@ -32,8 +32,9 @@ public:
     /**
      * @brief The structure's distinguished identity element.
      *
-     * For one-operation structures this is the identity of that operation. Rings and
-     * fields have two identities; check each concrete type for which one it returns.
+     * This is the identity of the structure's primary operation: the group operation,
+     * vector addition, or ring/field *addition* (so 0). A ring's multiplicative
+     * identity is `Ring::one()`. Each identity lives on its AlgebraicOperation.
      */
     virtual ElementType identity() const = 0;
     /** @brief Membership test: whether `element` belongs to this structure's carrier set. */

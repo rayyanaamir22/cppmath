@@ -1,4 +1,6 @@
 #pragma once
+#include <stdexcept>
+#include <string>
 #include <vector>
 
 namespace cppmath {
@@ -52,10 +54,9 @@ public:
 
     /**
      * @brief Matrix product (this * other), with the naive triple loop.
-     *        If the dimensions are incompatible (cols() != other.rows()) it returns
-     *        an empty 0x0 matrix instead of throwing.
-     * @param other The matrix to multiply with.
-     * @return Resulting matrix after multiplication.
+     * @param other The matrix to multiply with; needs other.rows() == cols().
+     * @return A rows() x other.cols() matrix.
+     * @throws std::invalid_argument if cols() != other.rows().
      */
     Matrix<T> operator*(const Matrix<T>& other) const;
 
@@ -102,8 +103,9 @@ size_t Matrix<T>::cols() const { return m_cols; }
 template<typename T>
 Matrix<T> Matrix<T>::operator*(const Matrix<T>& other) const {
     if (m_cols != other.m_rows) {
-        // Optionally, throw or handle error
-        return Matrix<T>(0, 0);
+        throw std::invalid_argument("Matrix multiplication: " + std::to_string(m_rows) + "x" +
+                                    std::to_string(m_cols) + " cannot be multiplied by " +
+                                    std::to_string(other.m_rows) + "x" + std::to_string(other.m_cols));
     }
     Matrix<T> result(m_rows, other.m_cols);
     for (size_t i = 0; i < m_rows; ++i) {

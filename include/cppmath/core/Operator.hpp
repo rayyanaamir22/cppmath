@@ -16,7 +16,10 @@ enum class Notation {
 };
 
 /** @brief Grouping of a chain of equal-precedence infix operators. */
-enum class Assoc { Left, Right };
+enum class Assoc {
+    Left,   ///< a - b - c  groups as  (a - b) - c
+    Right   ///< a ^ b ^ c  groups as  a ^ (b ^ c)
+};
 
 /** @brief How many arguments an operator takes: exactly `count`, or at least `count` if variadic. */
 struct Arity {

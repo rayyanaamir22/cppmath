@@ -24,6 +24,10 @@ SymmetricGroup3Element PermutationComposition::operate(const SymmetricGroup3Elem
 
 bool PermutationComposition::is_associative(const SymmetricGroup3&) const { return true; }
 bool PermutationComposition::is_commutative(const SymmetricGroup3&) const { return false; }
+bool PermutationComposition::has_identity(const SymmetricGroup3&) const { return true; }
+SymmetricGroup3Element PermutationComposition::identity(const SymmetricGroup3& group) const {
+    return SymmetricGroup3Element(std::make_shared<SymmetricGroup3>(group), {0, 1, 2});
+}
 
 // --- SymmetricGroup3 ---
 SymmetricGroup3::SymmetricGroup3() : Group("S_3", 6), op_() {}
@@ -31,9 +35,6 @@ SymmetricGroup3::SymmetricGroup3() : Group("S_3", 6), op_() {}
 const cppmath::abstract_algebra::AlgebraicOperation<SymmetricGroup3Element, SymmetricGroup3>& SymmetricGroup3::operation() const { return op_; }
 bool SymmetricGroup3::is_abelian() const { return false; }
 
-SymmetricGroup3Element SymmetricGroup3::identity() const {
-    return SymmetricGroup3Element(std::make_shared<SymmetricGroup3>(*this), {0, 1, 2});
-}
 
 bool SymmetricGroup3::contains(const SymmetricGroup3Element& element) const {
     const auto& perm = element.permutation();

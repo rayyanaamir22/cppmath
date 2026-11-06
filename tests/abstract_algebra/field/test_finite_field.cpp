@@ -41,6 +41,9 @@ TEST_CASE("Additive and multiplicative identity") {
         CHECK(a.add(zero, *field).int_value() == a.int_value());
         CHECK(a.multiply(one, *field).int_value() == a.int_value());
     }
+    // the structure reports the same two identities (more cases in test_structures)
+    CHECK(field->identity().int_value() == 0);
+    CHECK(field->one().int_value() == 1);
 }
 
 TEST_CASE("Additive inverses") {

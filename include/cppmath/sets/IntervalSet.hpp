@@ -49,9 +49,19 @@ public:
     static std::unique_ptr<IntervalSet> all_real();
 
     bool contains(double value) const override;
-    /** @brief Merges into one interval when `other` is an overlapping or touching interval; otherwise a UnionSet. */
+    /**
+     * @brief One merged interval when `other` is an interval that overlaps this one, or meets it at
+     *        a point that at least one of them contains; otherwise a UnionSet.
+     *
+     * So [0, 1] U (1, 2) is [0, 2), but (0, 1) U (1, 2) stays a UnionSet because 1 is in neither.
+     * An endpoint shared by both is included if either includes it.
+     */
     std::unique_ptr<Set> set_union(const Set& other) const override;
-    /** @brief With another interval: the overlap, or EmptySet if there is none. Otherwise an IntersectionSet. */
+    /**
+     * @brief With another interval: the overlap, or EmptySet if there is none. Otherwise an IntersectionSet.
+     *
+     * An endpoint shared by both is included only if both include it.
+     */
     std::unique_ptr<Set> intersect(const Set& other) const override;
     /** @brief The part of ℝ outside the interval: up to two intervals (a UnionSet), one interval, or EmptySet. */
     std::unique_ptr<Set> complement() const override;

@@ -29,6 +29,7 @@ public:
     std::string toString() const override;
     std::unique_ptr<Set> clone() const override;
     bool equals(const Set& other) const override;
+    /// Copyable so that `clone()` can return an independent object; `instance()` is the shared one.
     UniversalSet(const UniversalSet&) = default;
 };
 

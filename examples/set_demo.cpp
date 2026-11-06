@@ -19,10 +19,12 @@ int main() {
     // FiniteSet demo
     FiniteSet finite({1, 2, 3});
     std::cout << "finite: " << finite.toString() << std::endl;
-    finite.add_element(4);
-    std::cout << "finite after add 4: " << finite.toString() << std::endl;
-    finite.remove_element(2);
-    std::cout << "finite after remove 2: " << finite.toString() << std::endl;
+    // Sets are immutable: these return new sets and leave `finite` as it was.
+    auto with4 = finite.with_element(4);
+    std::cout << "with 4:    " << with4->toString() << std::endl;
+    auto without2 = finite.without_element(2);
+    std::cout << "without 2: " << without2->toString() << std::endl;
+    std::cout << "finite is still: " << finite.toString() << std::endl;
 
     // UnionSet demo
     auto union_set = interval1->set_union(finite);

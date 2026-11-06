@@ -23,6 +23,11 @@ public:
     virtual ~Group() = default;
     /** @brief The group operation *. */
     virtual const AlgebraicOperation<ElementType, Derived>& operation() const = 0;
+
+    /** @brief The identity element: the identity of `operation()`. */
+    ElementType identity() const override {
+        return operation().identity(static_cast<const Derived&>(*this));
+    }
     /** @brief Whether the group is abelian (its operation is commutative). */
     virtual bool is_abelian() const = 0;
 };
@@ -37,14 +42,18 @@ class PermutationComposition;
 /**
  * @brief Composition of permutations of {0, 1, 2}: `operate(a, b)` is a(b(x)), i.e. apply b first.
  *
- * Associative, not commutative.
+ * Associative, not commutative; the identity is the permutation {0, 1, 2}.
  */
 class PermutationComposition : public AlgebraicOperation<SymmetricGroup3Element, SymmetricGroup3> {
 public:
+    /// The binary operation, named "PermutationComposition".
     PermutationComposition();
-    SymmetricGroup3Element operate(const SymmetricGroup3Element& a, const SymmetricGroup3Element& b, const SymmetricGroup3& group) const;
-    bool is_associative(const SymmetricGroup3& group) const;
-    bool is_commutative(const SymmetricGroup3& group) const;
+    bool has_identity(const SymmetricGroup3& group) const override;
+    SymmetricGroup3Element identity(const SymmetricGroup3& group) const override;
+    /** @brief a(b(x)): composes the permutations, applying b first. */
+    SymmetricGroup3Element operate(const SymmetricGroup3Element& a, const SymmetricGroup3Element& b, const SymmetricGroup3& group) const override;
+    bool is_associative(const SymmetricGroup3& group) const override;
+    bool is_commutative(const SymmetricGroup3& group) const override;
 };
 
 /**
@@ -56,15 +65,14 @@ public:
 class SymmetricGroup3 : public Group<SymmetricGroup3, SymmetricGroup3Element> {
     PermutationComposition op_;
 public:
+    /// The group S_3, named "S_3" (order 6).
     SymmetricGroup3();
-    const AlgebraicOperation<SymmetricGroup3Element, SymmetricGroup3>& operation() const;
-    bool is_abelian() const;
-    /** @brief The identity permutation {0, 1, 2}. */
-    SymmetricGroup3Element identity() const;
+    const AlgebraicOperation<SymmetricGroup3Element, SymmetricGroup3>& operation() const override;
+    bool is_abelian() const override;
     /** @brief True if the element's permutation is a rearrangement of {0, 1, 2}. */
-    bool contains(const SymmetricGroup3Element& element) const;
+    bool contains(const SymmetricGroup3Element& element) const override;
     /** @brief All 6 permutations, in lexicographic order. */
-    std::vector<SymmetricGroup3Element> elements() const;
+    std::vector<SymmetricGroup3Element> elements() const override;
 };
 
 /**
@@ -80,12 +88,12 @@ public:
     /// The image vector: permutation()[i] is the image of i.
     const std::vector<int>& permutation() const;
     /** @brief The inverse permutation, so that p * p^{-1} is the identity. */
-    SymmetricGroup3Element inverse(const SymmetricGroup3& group) const;
+    SymmetricGroup3Element inverse(const SymmetricGroup3& group) const override;
     /** @brief The identity permutation {0, 1, 2}. */
-    SymmetricGroup3Element identity(const SymmetricGroup3& group) const;
+    SymmetricGroup3Element identity(const SymmetricGroup3& group) const override;
     /** @brief Composition `*this * other`, i.e. apply other first, via the group's operation. */
-    SymmetricGroup3Element operate(const SymmetricGroup3Element& other, const SymmetricGroup3& group) const;
-    bool equals(const SymmetricGroup3Element& other) const;
+    SymmetricGroup3Element operate(const SymmetricGroup3Element& other, const SymmetricGroup3& group) const override;
+    bool equals(const SymmetricGroup3Element& other) const override;
     int value() const override { return 0; } // Not meaningful for permutations, but required by interface
 };
 

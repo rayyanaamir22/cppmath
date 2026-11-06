@@ -32,6 +32,16 @@ public:
     virtual const AlgebraicOperation<ElementType, Derived>& addition_op() const = 0;
     /** @brief The multiplicative operation *. */
     virtual const AlgebraicOperation<ElementType, Derived>& multiplication_op() const = 0;
+
+    /** @brief The additive identity 0: the identity of `addition_op()`. */
+    ElementType identity() const override {
+        return addition_op().identity(static_cast<const Derived&>(*this));
+    }
+
+    /** @brief The multiplicative identity 1: the identity of `multiplication_op()`. */
+    ElementType one() const {
+        return multiplication_op().identity(static_cast<const Derived&>(*this));
+    }
 };
 
 /** @brief Example concrete structures for tests and demos; not part of the abstract hierarchy. */
@@ -39,19 +49,27 @@ namespace example {
 
 class FiniteField;
 
-/** @brief Addition mod p in a FiniteField. Associative and commutative. */
+/** @brief Addition mod p in a FiniteField. Associative and commutative; identity 0. */
 class Addition : public AlgebraicOperation<FiniteFieldElement, FiniteField> {
 public:
+    /// The binary operation, named "Addition".
     Addition();
+    bool has_identity(const FiniteField& field) const override;
+    FiniteFieldElement identity(const FiniteField& field) const override;
+    /** @brief (a + b) mod p, with p taken from `field`; the result's parent is a's parent. */
     FiniteFieldElement operate(const FiniteFieldElement& a, const FiniteFieldElement& b, const FiniteField& field) const override;
     bool is_associative(const FiniteField& field) const override;
     bool is_commutative(const FiniteField& field) const override;
 };
 
-/** @brief Multiplication mod p in a FiniteField. Associative and commutative. */
+/** @brief Multiplication mod p in a FiniteField. Associative and commutative; identity 1. */
 class Multiplication : public AlgebraicOperation<FiniteFieldElement, FiniteField> {
 public:
+    /// The binary operation, named "Multiplication".
     Multiplication();
+    bool has_identity(const FiniteField& field) const override;
+    FiniteFieldElement identity(const FiniteField& field) const override;
+    /** @brief (a * b) mod p, with p taken from `field`; the result's parent is a's parent. */
     FiniteFieldElement operate(const FiniteFieldElement& a, const FiniteFieldElement& b, const FiniteField& field) const override;
     bool is_associative(const FiniteField& field) const override;
     bool is_commutative(const FiniteField& field) const override;
@@ -60,23 +78,23 @@ public:
 /**
  * @brief Example: integers mod p, written Z/pZ or F_p.
  *
- * This is a field only when p is prime. The constructor does **not** check
- * primality; for composite p some nonzero elements have no inverse, and
- * FiniteFieldElement::inverse throws for them.
+ * This is a field exactly when p is prime, so the constructor rejects every other p.
+ * (For a composite modulus use a ring, e.g. IntegerMod4.)
  */
 class FiniteField : public Field<FiniteField, FiniteFieldElement> {
     int p_;
     Addition add_op_;
     Multiplication mul_op_;
 public:
-    /** @param p the modulus (should be prime; not checked). */
+    /**
+     * @param p the modulus.
+     * @throws std::invalid_argument if p is not prime (this includes p < 2).
+     */
     FiniteField(int p);
     /// The modulus p.
     int modulus() const;
     const AlgebraicOperation<FiniteFieldElement, FiniteField>& addition_op() const override;
     const AlgebraicOperation<FiniteFieldElement, FiniteField>& multiplication_op() const override;
-    /** @brief Returns 1, the *multiplicative* identity (the additive one is 0). */
-    FiniteFieldElement identity() const override;
     /** @brief True if the element's value is in 0..p-1. */
     bool contains(const FiniteFieldElement& element) const override;
     /** @brief 0, 1, ..., p-1. */
@@ -87,9 +105,9 @@ public:
 class FiniteFieldElement : public FieldElement<FiniteFieldElement, FiniteField> {
 public:
     /**
-     * @param parent the field; must not be null (its modulus is read here).
-     * @param value  reduced with C++ `%`, so a negative value stays negative
-     *               (and then fails FiniteField::contains).
+     * @param parent the field the element lives in.
+     * @param value  any integer; reduced into 0..p-1, so -1 becomes p-1.
+     * @throws std::invalid_argument if `parent` is null.
      */
     FiniteFieldElement(std::shared_ptr<const FiniteField> parent, int value);
     /// The representative in 0..p-1.
@@ -100,7 +118,7 @@ public:
     FiniteFieldElement multiply(const FiniteFieldElement& other, const FiniteField& field) const override;
     /**
      * @brief Multiplicative inverse mod p, found with the extended Euclidean algorithm.
-     * @throws std::runtime_error if the element has no inverse (0, or a non-unit when p is composite).
+     * @throws std::invalid_argument if the element is 0, which has no inverse.
      */
     FiniteFieldElement inverse(const FiniteField& field) const override;
 };

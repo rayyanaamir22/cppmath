@@ -28,7 +28,7 @@ public:
     /** @brief The identity element of `structure`. */
     virtual Derived identity(const StructureType& structure) const = 0;
     /** @brief The group operation `*this * other`. */
-    virtual Derived operate(const Derived& other, const StructureType& structure) const = 0;
+    virtual Derived operate(const Derived& other, const StructureType& structure) const override = 0;
     virtual int value() const override { return value_; }
     /** @brief Compares integer values; override for non-integer elements. */
     virtual bool equals(const Derived& other) const override { return value_ == other.value(); }

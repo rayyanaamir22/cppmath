@@ -17,6 +17,7 @@ class EmptySet : public Set {
 private:
     EmptySet() = default;
 public:
+    /// Copyable so that `clone()` can return an independent object; `instance()` is the shared one.
     EmptySet(const EmptySet&) = default;
     /** @brief The canonical shared instance. */
     static EmptySet& instance();

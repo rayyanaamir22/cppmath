@@ -105,7 +105,7 @@ Each new test needs a `TESTS` entry and an explicit rule in the [Makefile](../..
 Then write `docs/architecture/core.md` (mermaid class diagram) in the style of `sets.md`.
 
 ## Conventions to keep
-- Namespace `cppmath::core` (`cppmath::core::parse` for Layer 4); `#pragma once`; includes rooted at `include/`; Doxygen `/** @brief */`.
+- Namespace `cppmath::core` (`cppmath::core::parse` for Layer 4); `#pragma once`; includes rooted at `include/`; doc comments per the Documentation rules in [CLAUDE.md](../../../CLAUDE.md#documentation).
 - Immutable trees, `unique_ptr` ownership, every node has `clone()`. Operations return new trees.
 - Templates (`fold`, `Interpretation`, `Environment`) are header-only.
 - Errors: `std::invalid_argument` (bad arity/sort, parse error), `std::out_of_range` (unbound variable, unknown operator in an interpretation).
@@ -116,3 +116,36 @@ Then write `docs/architecture/core.md` (mermaid class diagram) in the style of `
 - Whether `Sort` should eventually *be* a `sets::Set` (dependent typing like `x : [0, 1)`) or stay a pure tag.
 - Implicit multiplication (`2x`) in the parser.
 
+
+---
+
+## Status (updated 2026-11-05)
+
+**Milestones 1-4 are implemented** and covered by `test_signature`, `test_expression`, `test_traversal`, `test_evaluate` and `test_parser` (all green under `make test`). Architecture notes: [docs/architecture/core.md](../../../docs/architecture/core.md).
+
+| # | Milestone | State |
+|---|---|---|
+| 1 | Syntax metadata (`Sort`, `Operator`, `Signature`, `standard()`) | done |
+| 2 | Generic terms (`Expression`, `Constant`, `Variable`, `Apply`, `Builders`); old per-operator classes deleted | done |
+| 3 | Traversal + semantics (`Visitor`, `fold`, `transform`, `Substitution`, `Interpretation`, `Environment`, `evaluate`, reworked `Function`) | done |
+| 4 | Parser (`Lexer`, Pratt `Parser`, `ParseError`, canonical printer, round-trip tests) | done |
+| 5 | Sets through core | not started |
+| 6 | Binders (`Bind`) | not started |
+| 7 | Second carrier demo (`FiniteField`) | partly: `test_evaluate` evaluates one tree over integers mod 7; no `FiniteField` interpretation or demo yet |
+
+### Deviations from the plan above
+- **Printer lives in `core/`, not `core/parse/`.** `Expression::toString()` calls it, and core can't depend on the parse layer.
+- **Number text is shortest-round-trip formatting**, not a stored source lexeme (`Constant` keeps only the `double`).
+- **`Constant` is non-negative and finite.** `-3` is `neg(3)`; this keeps print/parse round-trips exact. `build::num(-3)` does this for you.
+- **`Interpretation` and `Substitution` key on operator/variable *name*** (not `const Operator*`), so they work across Signatures that share names.
+- **Dropped for now (no operator uses them yet):** `Notation::Postfix`, `Notation::Bracket`, and the "has identity" operator property. `Expression` has no `children()` view; use `Apply::args()`, `fold` or `transform`.
+- **`standard()` is arithmetic and elementary functions only** (`+ - * / ^`, prefix `-`, `sin cos tan exp log sqrt abs`, `pi e`). Relations, logic and set operators arrive with milestone 5.
+- **`Function` is single-variable** (`Set::contains` takes a `double`), checks the domain *and* codomain on call, and rejects a null rule. The old zero-argument `evaluate()` is gone.
+- `core` sources are linked as a whole via a `wildcard` in the Makefile (`CORE_SRC`), so new core `.cpp` files need no Makefile edit.
+
+### Blockers for milestones 5-7: multi-sorted evaluation
+Milestone 5 needs expressions that mix sorts (`x in ([0, 1) U {2})` is Real x Set -> Bool). Two gaps in the current design have to be settled first:
+1. **One carrier per sort.** `Interpretation<Carrier>` has a single carrier. Mixed-sort evaluation needs `Carrier` to be a variant (e.g. `std::variant<double, bool, std::shared_ptr<const sets::Set>>`) with each operator checking its argument alternatives.
+2. **Overloaded operators.** `*` may mean Real x Real, Real x Matrix or Matrix x Matrix, but a `Signature` maps a symbol to exactly one `Operator`. This needs overloads plus a sort-resolution pass after parsing.
+
+Also open: interval literals `[a, b)` versus grouping parentheses, and matrix literals versus intervals.

@@ -13,29 +13,33 @@
 namespace cppmath {
 namespace abstract_algebra {
 
-// Abstract base for fields. Requires addition and multiplication operations.
-// Concrete fields must implement these operations and provide them via addition_op() and multiplication_op().
 
 // (Removed global forward declarations for Addition, Multiplication, FiniteField, FiniteFieldElement)
 
-// Addition and Multiplication should be implemented as subclasses of AlgebraicOperation for the field.
 
+/**
+ * @brief Abstract field (F, +, *): a commutative ring where every nonzero element has a multiplicative inverse.
+ *
+ * @tparam Derived     the concrete field class (CRTP), e.g. FiniteField.
+ * @tparam ElementType its element class, e.g. FiniteFieldElement.
+ */
 template<typename Derived, typename ElementType>
 class Field : public AlgebraicStructure<ElementType> {
 public:
     using AlgebraicStructure<ElementType>::AlgebraicStructure;
     virtual ~Field() = default;
-    // Get the addition operation
+    /** @brief The additive operation +. */
     virtual const AlgebraicOperation<ElementType, Derived>& addition_op() const = 0;
-    // Get the multiplication operation
+    /** @brief The multiplicative operation *. */
     virtual const AlgebraicOperation<ElementType, Derived>& multiplication_op() const = 0;
-    // Add field-specific virtual methods as needed
 };
 
+/** @brief Example concrete structures for tests and demos; not part of the abstract hierarchy. */
 namespace example {
 
 class FiniteField;
 
+/** @brief Addition mod p in a FiniteField. Associative and commutative. */
 class Addition : public AlgebraicOperation<FiniteFieldElement, FiniteField> {
 public:
     Addition();
@@ -44,6 +48,7 @@ public:
     bool is_commutative(const FiniteField& field) const override;
 };
 
+/** @brief Multiplication mod p in a FiniteField. Associative and commutative. */
 class Multiplication : public AlgebraicOperation<FiniteFieldElement, FiniteField> {
 public:
     Multiplication();
@@ -52,26 +57,51 @@ public:
     bool is_commutative(const FiniteField& field) const override;
 };
 
+/**
+ * @brief Example: integers mod p, written Z/pZ or F_p.
+ *
+ * This is a field only when p is prime. The constructor does **not** check
+ * primality; for composite p some nonzero elements have no inverse, and
+ * FiniteFieldElement::inverse throws for them.
+ */
 class FiniteField : public Field<FiniteField, FiniteFieldElement> {
     int p_;
     Addition add_op_;
     Multiplication mul_op_;
 public:
+    /** @param p the modulus (should be prime; not checked). */
     FiniteField(int p);
+    /// The modulus p.
     int modulus() const;
     const AlgebraicOperation<FiniteFieldElement, FiniteField>& addition_op() const override;
     const AlgebraicOperation<FiniteFieldElement, FiniteField>& multiplication_op() const override;
+    /** @brief Returns 1, the *multiplicative* identity (the additive one is 0). */
     FiniteFieldElement identity() const override;
+    /** @brief True if the element's value is in 0..p-1. */
     bool contains(const FiniteFieldElement& element) const override;
+    /** @brief 0, 1, ..., p-1. */
     std::vector<FiniteFieldElement> elements() const override;
 };
 
+/** @brief Example: an element of Z/pZ. */
 class FiniteFieldElement : public FieldElement<FiniteFieldElement, FiniteField> {
 public:
+    /**
+     * @param parent the field; must not be null (its modulus is read here).
+     * @param value  reduced with C++ `%`, so a negative value stays negative
+     *               (and then fails FiniteField::contains).
+     */
     FiniteFieldElement(std::shared_ptr<const FiniteField> parent, int value);
+    /// The representative in 0..p-1.
     int int_value() const;
+    /** @brief Sum mod p, via the field's addition operation. */
     FiniteFieldElement add(const FiniteFieldElement& other, const FiniteField& field) const override;
+    /** @brief Product mod p, via the field's multiplication operation. */
     FiniteFieldElement multiply(const FiniteFieldElement& other, const FiniteField& field) const override;
+    /**
+     * @brief Multiplicative inverse mod p, found with the extended Euclidean algorithm.
+     * @throws std::runtime_error if the element has no inverse (0, or a non-unit when p is composite).
+     */
     FiniteFieldElement inverse(const FiniteField& field) const override;
 };
 

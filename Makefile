@@ -12,7 +12,13 @@ endif
 BENCHMARKS := $(patsubst benchmarks/%.cpp,benchmarks/%,$(wildcard benchmarks/*/*.cpp))
 
 # Define groups - manually list tests for now (can be automated later)
-TESTS = test_matrix test_graph test_root test_vector test_combo test_prime test_finite_field test_expression
+TESTS = test_matrix test_graph test_root test_vector test_combo test_prime test_finite_field \
+	test_signature test_expression test_traversal test_evaluate test_parser
+# Source groups. core is linked as a whole: its pieces depend on each other (the
+# printer behind Expression::toString, the Signature behind the builders, ...).
+CORE_SRC = $(wildcard src/core/*.cpp) $(wildcard src/core/parse/*.cpp)
+SETS_SRC = src/sets/IntervalSet.cpp src/sets/FiniteSet.cpp src/sets/UnionSet.cpp src/sets/IntersectionSet.cpp src/sets/EmptySet.cpp src/sets/UniversalSet.cpp
+
 EXAMPLES = field_demo vector_demo group_demo ring_demo vsp_demo lie_demo set_demo matrix_demo graph_demo ml_pipeline
 
 all: $(TESTS) $(EXAMPLES)
@@ -72,7 +78,19 @@ test_prime: tests/number_theory/test_prime.cpp src/number_theory/prime.cpp src/n
 test_finite_field: tests/abstract_algebra/field/test_finite_field.cpp src/abstract_algebra/field/Field.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
-test_expression: tests/core/test_expression.cpp src/core/Variable.cpp src/core/Constant.cpp src/core/BinaryOperations.cpp src/core/UnaryOperations.cpp src/core/Function.cpp src/sets/IntervalSet.cpp src/sets/FiniteSet.cpp src/sets/UnionSet.cpp src/sets/IntersectionSet.cpp src/sets/EmptySet.cpp src/sets/UniversalSet.cpp
+test_signature: tests/core/test_signature.cpp $(CORE_SRC) $(SETS_SRC)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+test_expression: tests/core/test_expression.cpp $(CORE_SRC) $(SETS_SRC)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+test_traversal: tests/core/test_traversal.cpp $(CORE_SRC) $(SETS_SRC)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+test_evaluate: tests/core/test_evaluate.cpp $(CORE_SRC) $(SETS_SRC)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+test_parser: tests/core/test_parser.cpp $(CORE_SRC) $(SETS_SRC)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 clean:

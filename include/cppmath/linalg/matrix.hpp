@@ -1,18 +1,18 @@
 #pragma once
 #include <vector>
 
+namespace cppmath {
+namespace linalg {
+
 /**
  * @class Matrix
- * @brief Represents a mathematical matrix with elements of type T.
+ * @brief A dense m x n matrix with entries of type T.
  *
  * This class provides basic matrix operations and is designed for extension (e.g., convolution, multiplication).
  * Storage is row-major in a flat vector for cache efficiency.
  *
  * @tparam T Numeric type (int, float, double, etc.)
  */
-namespace cppmath {
-namespace linalg {
-
 template<typename T>
 class Matrix {
 public:
@@ -25,7 +25,7 @@ public:
     Matrix(size_t rows, size_t cols);
 
     /**
-     * @brief Accesses the element at row i, column j (modifiable).
+     * @brief Accesses the element at row i, column j (modifiable). Not bounds-checked.
      * @param i Row index (0-based).
      * @param j Column index (0-based).
      * @return Reference to the element at (i, j).
@@ -33,7 +33,7 @@ public:
     T& operator()(size_t i, size_t j);
 
     /**
-     * @brief Accesses the element at row i, column j (read-only).
+     * @brief Accesses the element at row i, column j (read-only). Not bounds-checked.
      * @param i Row index (0-based).
      * @param j Column index (0-based).
      * @return Const reference to the element at (i, j).
@@ -51,8 +51,9 @@ public:
     size_t cols() const;
 
     /**
-     * @brief Multiplies this matrix by another matrix and returns the result.
-     *        Logs an error if dimensions are incompatible.
+     * @brief Matrix product (this * other), with the naive triple loop.
+     *        If the dimensions are incompatible (cols() != other.rows()) it returns
+     *        an empty 0x0 matrix instead of throwing.
      * @param other The matrix to multiply with.
      * @return Resulting matrix after multiplication.
      */

@@ -50,8 +50,23 @@ Modules: `abstract_algebra`, `core` (symbolic expressions), `sets`, `linalg`, `n
 - **Headers:** `#pragma once`. Include paths go from `include/`: `#include "cppmath/sets/Set.hpp"`. Prefer this over `../` relative includes (a stale one broke `Vector` once).
 - **Templates:** template definitions live in the header (e.g. `Matrix<T>` is header-only; `src/linalg/matrix.cpp` is intentionally empty).
 - **File naming:** class-per-file modules use `PascalCase.hpp` (`sets/`, `core/`, `abstract_algebra/`). Function-collection modules use `lowercase.hpp` (`prime.hpp`, `combo.hpp`, `root.hpp`).
-- **Docs:** Doxygen-style `/** @brief ... */` on public APIs.
+- **Docs:** every public API is documented. See [Documentation](#documentation) below.
 - **Errors:** throw `std::invalid_argument` or `std::out_of_range` on dimension mismatch, bad index, or bad domain.
+
+### Documentation
+
+Doc comments are mandatory for the public API. In VS Code the C/C++ extension (cpptools) shows them on hover and in completion, much like Python docstrings, though unlike Python they aren't available at runtime.
+
+- **What:** every public class, struct, enum and free function, and every public or protected method, declared under `include/`.
+- **Where:** immediately above the declaration in the **header**, because hover reads it from there even when the definition is in a `.cpp`. `.cpp` files keep ordinary `//` comments explaining how and why, not a second copy of the doc.
+- **Format:** `/** @brief One sentence. */`, plus a paragraph when the math or design needs it. Add `@param` / `@return` when the name and type don't already say it. Always add `@throws` for every exception type a function can throw. Use `@code ... @endcode` for a short example where it helps.
+- **Classes:** say what mathematical object the class models, the invariant it keeps, and any ownership or lifetime rules (e.g. a non-owning pointer that must outlive the object).
+- **Shortcuts:**
+  - Trivial accessors may use a one-line `///`.
+  - Enum values and fields use a trailing `///<`.
+  - An override needs no comment if the base virtual is documented and the behaviour is the same; document it if the behaviour differs or it adds `@throws`.
+  - Private members, `detail` / anonymous-namespace helpers, tests and examples are exempt.
+- **Check:** `clang++ -std=c++17 -Iinclude -Wdocumentation -fsyntax-only <header>` flags `@param` names that don't match the signature.
 
 ### Abstract algebra (CRTP + virtual operations)
 

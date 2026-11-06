@@ -13,28 +13,36 @@
 namespace cppmath {
 namespace abstract_algebra {
 
-// Abstract base for field elements. Concrete elements should use the field's addition and multiplication operations.
 
-// Abstract FieldElement: Derived is the concrete element, StructureType is the field type
-// Inherit and implement for concrete field elements
 
+/**
+ * @brief Abstract element of a field: supports +, * and multiplicative inverse.
+ *
+ * @tparam Derived       the concrete element class (CRTP).
+ * @tparam StructureType the field class it belongs to; must provide `addition_op()`.
+ *
+ * Stores an integer `value_`; `equals()` compares it. The inherited `operate()`
+ * means **addition**, through the parent field's `addition_op()`.
+ */
 template<typename Derived, typename StructureType>
 class FieldElement : public AlgebraicElement<Derived, StructureType> {
 protected:
     int value_;
 public:
+    /** @param value integer representative. */
     FieldElement(std::shared_ptr<const StructureType> parent_structure = nullptr, int value = 0)
         : AlgebraicElement<Derived, StructureType>(parent_structure), value_(value) {}
     virtual ~FieldElement() = default;
-    // Add two field elements
+    /** @brief `*this + other` in `structure`. */
     virtual Derived add(const Derived& other, const StructureType& structure) const = 0;
-    // Multiply two field elements
+    /** @brief `*this * other` in `structure`. */
     virtual Derived multiply(const Derived& other, const StructureType& structure) const = 0;
-    // Return the multiplicative inverse
+    /** @brief Multiplicative inverse; concrete types throw for 0. */
     virtual Derived inverse(const StructureType& structure) const = 0;
-    // Add more field element-specific virtual methods as needed
     virtual int value() const override { return value_; }
+    /** @brief Compares integer values. */
     virtual bool equals(const Derived& other) const override { return value_ == other.value(); }
+    /** @brief The primary operation, which for a field is addition: `structure.addition_op()`. */
     virtual Derived operate(const Derived& other, const StructureType& structure) const override {
         return structure.addition_op().operate(static_cast<const Derived&>(*this), other, structure);
     }

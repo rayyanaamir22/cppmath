@@ -10,7 +10,7 @@ _Last reviewed: 2026-11-04 (branch `core`)._
 |---|---|---|---|
 | `abstract_algebra` | Group, Ring, Field, VectorSpace, Lie: abstract CRTP bases + example concrete types (S3, Z/nZ, FiniteField mod p) | `test_finite_field` ✅ | Demos for each structure. `*Element.cpp` files are empty stubs. |
 | `sets` | Interval, Finite, Union, Intersection, Empty, Universal | none dedicated (only used by `test_expression`) | `sets.hpp`/`sets.cpp` are empty stubs. Has no dedicated doctest suite. |
-| `core` (symbolic) | `Expression`, `Variable`, `Constant`, Add/Multiply/Power, Sin/Cos/Exp/Log, `Function` | `test_expression` ✅ | Variables can't be evaluated yet. There's no environment/binding. |
+| `core` (symbolic) | Generic `Apply(Operator, args)` AST over a `Signature`; `fold`/`transform`, `Substitution`, `Interpretation`/`Environment`/`evaluate`, Lexer + Pratt `Parser`, canonical printer, `Function` | `test_signature`, `test_expression`, `test_traversal`, `test_evaluate`, `test_parser` ✅ | Milestones 1-4 of [core/PLAN.md](include/cppmath/core/PLAN.md) done. Sets/binders/second carrier not started. |
 | `linalg` | `Vector` (AVX add/sub), `Matrix<T>` (header-only, `operator*`) | `test_matrix` ✅, `test_vector` ✅ | `decomposition.cpp` is empty. |
 | `numerics` | Newton sqrt / cbrt | `test_root` ✅ | Has a benchmark. |
 | `number_theory` | `is_prime` and friends | `test_prime` ✅ | |
@@ -35,15 +35,15 @@ Still open (need design decisions or analysis):
 ## Next up
 
 ### 1. Symbolic core → calculus (current branch focus)
-- [ ] Evaluation environment: `evaluate(const Env&)` that binds `Variable` names to values (replaces "no variables" `evaluate()`).
-- [ ] Missing nodes: Subtract, Divide, Negate (or express via Add/Multiply/Power with constants).
-- [ ] `Operator` base with arbitrary arity (planned in the old roadmap, not started).
+- [x] Evaluation environment: `evaluate(expr, interp, env)` / `evaluate_real(expr, env)`.
+- [x] Missing nodes: Subtract, Divide, Negate (now operators in `Signature::standard()`).
+- [x] `Operator` with arbitrary arity (`Arity::fixed` / `at_least`).
 - [ ] Simplification pass (constant folding, `x*1`, `x+0`, `x^1`).
 - [ ] Symbolic differentiation `d/dx` on the expression tree → fills `calculus/diff.hpp`.
 - [ ] Use `Function`'s domain set: check that inputs lie in the domain on evaluate, and validate the domain of `Log`.
 
 ### 2. AST parser
-- [ ] Tokenizer + recursive-descent (Pratt) parser from string → `Expression` tree. It should round-trip `toString()`.
+- [x] Tokenizer + Pratt parser from string → `Expression` tree; round-trips `toString()`.
 - [ ] Parse set notation (`[0, 1)`, `{1, 2}`, `A U B`, `A ∩ B`) into `Set` trees.
 
 ### 3. Sets

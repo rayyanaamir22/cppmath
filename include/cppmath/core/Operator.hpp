@@ -12,7 +12,8 @@ enum class Notation {
     Atom,         ///< nullary constant:   pi
     Prefix,       ///< one operand:        -x
     Infix,        ///< two operands:       x + y
-    FunctionCall  ///< any number:         sin(x), max(x, y, z)
+    FunctionCall, ///< any number:         sin(x), max(x, y, z)
+    Binder        ///< binds a variable:  sum(i, 1, 10, i)  (see Bind)
 };
 
 /** @brief Grouping of a chain of equal-precedence infix operators. */
@@ -54,6 +55,10 @@ struct Properties {
  *    build them without extra checks.
  *  - A non-variadic operator lists exactly `arity.count` input sorts. A variadic
  *    one lists at least one; the last is reused for every extra argument.
+ *  - A Binder operator has fixed arity >= 1. The arguments are the operands that
+ *    follow the bound variable: any bounds, then the body as the **last** one
+ *    (`sum` takes lo, hi, body, so arity 3). The bound variable itself is not an
+ *    argument; its sort is `bound_sort()`.
  */
 class Operator {
 public:
@@ -67,11 +72,12 @@ public:
      * @param precedence  binding strength for Infix/Prefix; higher binds tighter.
      * @param assoc       grouping of chained Infix uses.
      * @param properties  algebraic hints for simplifiers.
+     * @param bound_sort  for Binder operators only: the sort of the variable they bind.
      * @throws std::invalid_argument if the invariants above are violated.
      */
     Operator(std::string name, std::string symbol, Arity arity, std::vector<Sort> input_sorts,
              Sort output_sort, Notation notation, int precedence = 0, Assoc assoc = Assoc::Left,
-             Properties properties = {});
+             Properties properties = {}, Sort bound_sort = Sort::Real());
 
     /** @brief Canonical identifier, unique within a Signature (e.g. "add"). */
     const std::string& name() const { return name_; }
@@ -89,6 +95,8 @@ public:
     Assoc assoc() const { return assoc_; }
     /// Associativity/commutativity hints.
     const Properties& properties() const { return properties_; }
+    /// For Binder operators: the sort of the variable they bind (Real otherwise, unused).
+    const Sort& bound_sort() const { return bound_sort_; }
 
     /** @brief Whether `n` arguments are allowed. */
     bool accepts_count(std::size_t n) const;
@@ -104,6 +112,7 @@ private:
     int precedence_;
     Assoc assoc_;
     Properties properties_;
+    Sort bound_sort_;
 };
 
 } // namespace core

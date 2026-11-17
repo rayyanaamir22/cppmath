@@ -16,7 +16,7 @@ namespace build {
 
 /** @brief A number; negatives become neg(literal) so they round-trip through the parser. */
 ExprPtr num(double v);
-/** @brief A Real variable. @throws std::invalid_argument for invalid names or names of standard atoms (pi, e). */
+/** @brief A Real variable. @throws std::invalid_argument for invalid names or reserved words (`pi`, `e`, `sin`, `sum`, ...). */
 ExprPtr var(const std::string& name);
 /// The constant pi.
 ExprPtr pi();
@@ -50,6 +50,14 @@ ExprPtr log(ExprPtr a);
 ExprPtr sqrt(ExprPtr a);
 /// abs(a)
 ExprPtr abs(ExprPtr a);
+
+/**
+ * @brief sum(variable, lo, hi, body): the sum of `body` as `variable` runs over lo..hi.
+ * @throws std::invalid_argument if `variable` is invalid or reserved, or an argument is null.
+ */
+ExprPtr sum(const std::string& variable, ExprPtr lo, ExprPtr hi, ExprPtr body);
+/** @brief prod(variable, lo, hi, body): the product of `body` as `variable` runs over lo..hi. */
+ExprPtr prod(const std::string& variable, ExprPtr lo, ExprPtr hi, ExprPtr body);
 
 } // namespace build
 } // namespace core

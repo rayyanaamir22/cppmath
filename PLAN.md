@@ -10,13 +10,15 @@ _Last reviewed: 2026-11-06 (branch `core`)._
 |---|---|---|---|
 | `abstract_algebra` | Group, Ring, Field, VectorSpace, Lie: abstract CRTP bases + example concrete types (S3, Z/nZ, FiniteField mod p) | `test_finite_field` ✅ | Demos for each structure. `*Element.cpp` files are empty stubs. |
 | `sets` | Interval, Finite, Union, Intersection, Empty, Universal | `test_sets` ✅ | `sets.hpp`/`sets.cpp` are empty stubs. `FiniteSet` is immutable (`with_element` / `without_element`). |
-| `core` (symbolic) | Generic `Apply(Operator, args)` AST over a `Signature`; `fold`/`transform`, `Substitution`, `Interpretation`/`Environment`/`evaluate`, Lexer + Pratt `Parser`, canonical printer, `Function` | `test_signature`, `test_expression`, `test_traversal`, `test_evaluate`, `test_parser` ✅ | Milestones 1-4 of [core/PLAN.md](include/cppmath/core/PLAN.md) done. Sets/binders/second carrier not started. |
+| `core` (symbolic) | Generic `Apply(Operator, args)` AST over a `Signature`; `fold`/`transform`, `Substitution`, `Interpretation`/`Environment`/`evaluate`, Lexer + Pratt `Parser`, canonical printer, `Function` | `test_signature`, `test_expression`, `test_traversal`, `test_evaluate`, `test_parser` ✅ | Milestones 1-4, 6, 7 of [core/PLAN.md](include/cppmath/core/PLAN.md) done: binders (`sum`/`prod`, capture-avoiding substitution), a F_p interpretation, `simplify`. Only milestone 5 (sets through core) remains, blocked on the multi-sorted design. |
 | `linalg` | `Vector` (AVX add/sub), `Matrix<T>` (header-only, `operator*`) | `test_matrix` ✅, `test_vector` ✅ | `decomposition.cpp` is empty. |
 | `numerics` | Newton sqrt / cbrt | `test_root` ✅ | Has a benchmark. |
 | `number_theory` | `is_prime` and friends | `test_prime` ✅ | |
 | `combinatorics` | combinations / permutations | `test_combo` ✅ | |
 | `graph` | adjacency graph, `is_tree` | `test_graph` ✅ | |
-| `calculus`, `geometry`, `stats`, `algebra` (polynomial), `utils` | Empty stubs | none | |
+| `calculus` | `differentiate` (rule table, chain rule, `sum`) in `diff.hpp` | `test_diff` ✅ | Integration and partial derivatives not started. |
+| `geometry`, `stats`, `algebra` (polynomial) | Empty stubs | none | |
+| `utils` | `format.hpp`: `format_number` (shortest text that parses back exactly), shared by `core` and `sets` | covered via `test_sets`, `test_expression` | `utils.hpp` itself is a stub. |
 
 ## Known issues
 
@@ -47,9 +49,9 @@ Still open (need design decisions or analysis):
 - [x] Evaluation environment: `evaluate(expr, interp, env)` / `evaluate_real(expr, env)`.
 - [x] Missing nodes: Subtract, Divide, Negate (now operators in `Signature::standard()`).
 - [x] `Operator` with arbitrary arity (`Arity::fixed` / `at_least`).
-- [ ] Simplification pass (constant folding, `x*1`, `x+0`, `x^1`).
-- [ ] Symbolic differentiation `d/dx` on the expression tree → fills `calculus/diff.hpp`.
-- [ ] Use `Function`'s domain set: check that inputs lie in the domain on evaluate, and validate the domain of `Log`.
+- [x] Simplification pass: `core::simplify` (identities, sign handling, exact constant folding; idempotent). Still open: combining like terms, `x*x → x^2`.
+- [x] Symbolic differentiation: `calculus::differentiate` with an extensible rule table, chain rule, and `sum`. Still open: partial derivatives/gradients, `prod`, integration.
+- [x] `Function` checks domain/codomain on call; `log`, `sqrt`, `div`, `pow` validate their domains.
 
 ### 2. AST parser
 - [x] Tokenizer + Pratt parser from string → `Expression` tree; round-trips `toString()`.

@@ -7,10 +7,11 @@ namespace core {
 
 Operator::Operator(std::string name, std::string symbol, Arity arity, std::vector<Sort> input_sorts,
                    Sort output_sort, Notation notation, int precedence, Assoc assoc,
-                   Properties properties)
+                   Properties properties, Sort bound_sort)
     : name_(std::move(name)), symbol_(std::move(symbol)), arity_(arity),
       input_sorts_(std::move(input_sorts)), output_sort_(std::move(output_sort)),
-      notation_(notation), precedence_(precedence), assoc_(assoc), properties_(properties) {
+      notation_(notation), precedence_(precedence), assoc_(assoc), properties_(properties),
+      bound_sort_(std::move(bound_sort)) {
     if (name_.empty() || symbol_.empty())
         throw std::invalid_argument("Operator: name and symbol must be non-empty");
 
@@ -21,10 +22,15 @@ Operator::Operator(std::string name, std::string symbol, Arity arity, std::vecto
         case Notation::Prefix: required = 1; break;
         case Notation::Infix: required = 2; break;
         case Notation::FunctionCall: required = arity_.count; break;
+        case Notation::Binder: required = arity_.count; break;
     }
-    if (notation_ != Notation::FunctionCall && (arity_.variadic || arity_.count != required))
+    if (notation_ != Notation::FunctionCall && notation_ != Notation::Binder &&
+        (arity_.variadic || arity_.count != required))
         throw std::invalid_argument("Operator '" + name_ + "': this notation requires fixed arity " +
                                     std::to_string(required));
+    // A binder needs a body, and a fixed operand list so the parser knows where the body is.
+    if (notation_ == Notation::Binder && (arity_.variadic || arity_.count < 1))
+        throw std::invalid_argument("Operator '" + name_ + "': a binder needs fixed arity >= 1 (its last operand is the body)");
 
     if (arity_.variadic) {
         if (input_sorts_.empty())

@@ -1,5 +1,6 @@
 #include "cppmath/core/Builders.hpp"
 #include "cppmath/core/Apply.hpp"
+#include "cppmath/core/Bind.hpp"
 #include "cppmath/core/Constant.hpp"
 #include "cppmath/core/Signature.hpp"
 #include "cppmath/core/Variable.hpp"
@@ -29,9 +30,22 @@ ExprPtr num(double v) {
     return std::signbit(v) ? neg(std::move(literal)) : std::move(literal);
 }
 
+namespace {
+ExprPtr make_binder(const char* op_name, const std::string& variable, ExprPtr lo, ExprPtr hi, ExprPtr body) {
+    if (Signature::standard().is_reserved_word(variable))
+        throw std::invalid_argument("'" + variable + "' is a reserved word and cannot be bound");
+    std::vector<ExprPtr> operands;
+    operands.push_back(std::move(lo));
+    operands.push_back(std::move(hi));
+    operands.push_back(std::move(body));
+    return std::make_unique<Bind>(Signature::standard().get(op_name), variable, std::move(operands));
+}
+} // namespace
+
 ExprPtr var(const std::string& name) {
-    if (Signature::standard().find_atom(name))
-        throw std::invalid_argument("var: '" + name + "' is a reserved constant");
+    // A reserved word would print as itself but parse as the constant/function/binder.
+    if (Signature::standard().is_reserved_word(name))
+        throw std::invalid_argument("var: '" + name + "' is a reserved word");
     return std::make_unique<Variable>(name);
 }
 
@@ -52,6 +66,13 @@ ExprPtr exp(ExprPtr a) { return make("exp", std::move(a)); }
 ExprPtr log(ExprPtr a) { return make("log", std::move(a)); }
 ExprPtr sqrt(ExprPtr a) { return make("sqrt", std::move(a)); }
 ExprPtr abs(ExprPtr a) { return make("abs", std::move(a)); }
+
+ExprPtr sum(const std::string& variable, ExprPtr lo, ExprPtr hi, ExprPtr body) {
+    return make_binder("sum", variable, std::move(lo), std::move(hi), std::move(body));
+}
+ExprPtr prod(const std::string& variable, ExprPtr lo, ExprPtr hi, ExprPtr body) {
+    return make_binder("prod", variable, std::move(lo), std::move(hi), std::move(body));
+}
 
 } // namespace build
 } // namespace core

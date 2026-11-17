@@ -12,6 +12,7 @@ namespace core {
  *   Prefix        (-x)
  *   Infix         (x + y)
  *   FunctionCall  sin(x), max(x, y, z)
+ *   Binder        sum(i, 1, 10, (i ^ 2))   (bound variable first, body last)
  *
  * Always fully parenthesised, so no precedence knowledge is needed to read it
  * back. Numbers use the shortest decimal text that parses back to the same

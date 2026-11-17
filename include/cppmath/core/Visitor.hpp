@@ -6,11 +6,12 @@ namespace core {
 class Constant;
 class Variable;
 class Apply;
+class Bind;
 
 /**
  * @brief Double-dispatch interface over the AST node kinds.
  *
- * There are only a few node kinds (operators are data inside Apply, not
+ * There are only a few node kinds (operators are data inside Apply and Bind, not
  * subclasses), so this interface stays small as the operator set grows.
  * Most algorithms should use `fold` / `transform` instead of subclassing this.
  */
@@ -23,6 +24,8 @@ public:
     virtual void visit(const Variable&) = 0;
     /// Called for an operator application (including atoms).
     virtual void visit(const Apply&) = 0;
+    /// Called for a binder application such as `sum(i, 1, 10, body)`.
+    virtual void visit(const Bind&) = 0;
 };
 
 } // namespace core

@@ -55,6 +55,18 @@ public:
     const Operator* find_function(const std::string& symbol) const { return find_symbol(Notation::FunctionCall, symbol); }
     /// Atom (nullary constant) written `symbol`, or nullptr.
     const Operator* find_atom(const std::string& symbol) const { return find_symbol(Notation::Atom, symbol); }
+    /// Binder written `symbol` (e.g. "sum"), or nullptr.
+    const Operator* find_binder(const std::string& symbol) const { return find_symbol(Notation::Binder, symbol); }
+
+    /**
+     * @brief Whether `word` is an atom, function or binder name of this signature.
+     *
+     * Such words have a fixed meaning to the parser, so they cannot also be used as
+     * variable names: `Variable("sin")` would print as `sin`, which parses as a function.
+     */
+    bool is_reserved_word(const std::string& word) const {
+        return find_atom(word) || find_function(word) || find_binder(word);
+    }
 
     /** @brief Symbols of all Infix/Prefix operators that the lexer must recognise as punctuation-like tokens. */
     std::vector<std::string> operator_symbols() const;
@@ -66,7 +78,7 @@ public:
      * @brief The built-in real-arithmetic vocabulary.
      *
      * Infix: + - * / ^ ; prefix: - ; functions: sin cos tan exp log sqrt abs ;
-     * atoms: pi e. Precedence (loosest to tightest): + - (10), * / (20),
+     * atoms: pi e ; binders: sum prod (`sum(i, lo, hi, body)`). Precedence (loosest to tightest): + - (10), * / (20),
      * prefix - (30), ^ (40, right-associative), so -x^2 means -(x^2).
      */
     static const Signature& standard();

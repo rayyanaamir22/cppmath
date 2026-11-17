@@ -85,3 +85,39 @@ TEST_CASE("custom signatures: add, reject duplicates, extend") {
     CHECK(ext.size() == Signature::standard().size() + sig.size());
     CHECK(ext.find("add") != Signature::standard().find("add"));  // copies, not shared
 }
+
+TEST_CASE("binder operators: shape validation and lookup") {
+    const Sort R = Sort::Real();
+    // a binder needs a fixed, non-zero operand list (the last operand is the body)
+    CHECK_THROWS_AS(Operator("b", "b", Arity::fixed(0), {}, R, Notation::Binder), std::invalid_argument);
+    CHECK_THROWS_AS(Operator("b", "b", Arity::at_least(1), {R}, R, Notation::Binder), std::invalid_argument);
+    CHECK_THROWS_AS(Operator("b", "b", Arity::fixed(2), {R}, R, Notation::Binder), std::invalid_argument);   // sort count
+    Operator ok("b", "b", Arity::fixed(1), {R}, R, Notation::Binder, 0, Assoc::Left, {}, Sort::Bool());
+    CHECK(ok.bound_sort() == Sort::Bool());
+    CHECK(Operator("f", "f", Arity::fixed(1), {R}, R, Notation::FunctionCall).bound_sort() == R);   // default
+
+    const Signature& s = Signature::standard();
+    CHECK(s.find_binder("sum")->name() == "sum");
+    CHECK(s.find_binder("prod")->arity().count == 3);   // lo, hi, body
+    CHECK(s.get("sum").notation() == Notation::Binder);
+    CHECK(s.get("sum").bound_sort() == R);
+    CHECK(s.find_binder("sin") == nullptr);
+    CHECK(s.find_function("sum") == nullptr);           // binders and functions are separate namespaces of notation
+}
+
+TEST_CASE("reserved words: atoms, functions and binders, but not variables") {
+    const Signature& s = Signature::standard();
+    for (const char* w : {"pi", "e", "sin", "sqrt", "sum", "prod"}) CHECK(s.is_reserved_word(w));
+    for (const char* w : {"x", "i", "summ", "Sum", "p"}) CHECK_FALSE(s.is_reserved_word(w));
+    CHECK_FALSE(s.is_reserved_word("+"));   // operator symbols are not words
+}
+
+TEST_CASE("binder symbols are not lexed as operators; extend keeps the bound sort") {
+    auto syms = Signature::standard().operator_symbols();
+    CHECK(std::find(syms.begin(), syms.end(), "sum") == syms.end());
+
+    Signature copy;
+    copy.extend(Signature::standard());
+    CHECK(copy.get("sum").bound_sort() == Sort::Real());
+    CHECK(copy.find_binder("prod") != Signature::standard().find_binder("prod"));   // a copy, not shared
+}

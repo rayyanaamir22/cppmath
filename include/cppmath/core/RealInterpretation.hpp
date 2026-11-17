@@ -9,6 +9,10 @@ namespace core {
  *
  * Bad domains throw std::invalid_argument rather than returning NaN/inf:
  * division by zero, log of x <= 0, sqrt of x < 0, and pow with an undefined result.
+ *
+ * Binders: `sum(i, lo, hi, body)` and `prod(i, lo, hi, body)` run `i` over the
+ * integers lo..hi (an empty range gives 0 and 1). The bounds must be finite
+ * integers and the range at most 10,000,000 terms, otherwise `std::invalid_argument`.
  */
 const Interpretation<double>& real_interpretation();
 

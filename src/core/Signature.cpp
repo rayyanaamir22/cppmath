@@ -77,6 +77,11 @@ const Signature& Signature::standard() {
         for (const char* f : {"sin", "cos", "tan", "exp", "log", "sqrt", "abs"}) function(f);
         atom("pi");
         atom("e");
+
+        // sum(i, lo, hi, body) = body(lo) + ... + body(hi); prod likewise with *.
+        // Operands: lo, hi, body. The bound variable i is a Real.
+        for (const char* b : {"sum", "prod"})
+            s.add(Operator(b, b, Arity::fixed(3), {R, R, R}, R, Notation::Binder, 0, Assoc::Left, {}, R));
         return s;
     }();
     return sig;

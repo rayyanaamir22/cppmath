@@ -25,8 +25,16 @@ std::string print(const Expression& expr) {
                     for (std::size_t i = 0; i < kids.size(); ++i) out += (i ? ", " : "") + kids[i];
                     return out + ")";
                 }
+                case Notation::Binder:
+                    break;  // binders are Bind nodes, printed by the handler below
             }
             return std::string();  // unreachable: all notations handled
+        },
+        [](const Bind& b, std::vector<std::string> kids) {
+            // sum(i, 1, 10, body): the bound variable first, then the operands.
+            std::string out = b.op().symbol() + "(" + b.variable().name();
+            for (const auto& k : kids) out += ", " + k;
+            return out + ")";
         });
 }
 

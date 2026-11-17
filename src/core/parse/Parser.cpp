@@ -1,5 +1,6 @@
 #include "cppmath/core/parse/Parser.hpp"
 #include "cppmath/core/Apply.hpp"
+#include "cppmath/core/Bind.hpp"
 #include "cppmath/core/Constant.hpp"
 #include "cppmath/core/Variable.hpp"
 #include "cppmath/core/parse/Lexer.hpp"
@@ -100,8 +101,35 @@ private:
         }
     }
 
+    /** Build a Bind, turning arity/sort/name complaints into positioned ParseErrors. */
+    static ExprPtr make_bind(const Operator& op, const std::string& var, std::vector<ExprPtr> operands,
+                             const SourceSpan& span) {
+        try {
+            return std::make_unique<Bind>(op, var, std::move(operands));
+        } catch (const std::invalid_argument& e) {
+            fail(e.what(), span);
+        }
+    }
+
+    /** binder '(' IDENT ',' expr {',' expr} ')'  -- the identifier is the bound variable, not an expression. */
+    ExprPtr parse_binder(const Operator& binder, const Token& id) {
+        next();  // '('
+        Token var = next();
+        if (var.kind != TokenKind::Identifier) fail("expected the name of the bound variable", var.span);
+        if (sig_.is_reserved_word(var.text)) fail("'" + var.text + "' is a reserved word and cannot be bound", var.span);
+        if (peek().kind != TokenKind::Comma) fail("expected ',' after the bound variable", peek().span);
+        std::vector<ExprPtr> operands;
+        while (peek().kind == TokenKind::Comma) {
+            next();
+            operands.push_back(parse_expr(0));
+        }
+        expect(TokenKind::RParen, "')'");
+        return make_bind(binder, var.text, std::move(operands), id.span);
+    }
+
     ExprPtr parse_identifier(const Token& id) {
         if (peek().kind == TokenKind::LParen) {
+            if (const Operator* binder = sig_.find_binder(id.text)) return parse_binder(*binder, id);
             const Operator* fn = sig_.find_function(id.text);
             if (!fn) fail("unknown function '" + id.text + "'", id.span);
             next();  // '('
@@ -117,7 +145,8 @@ private:
             return make_apply(*fn, std::move(args), id.span);
         }
         if (const Operator* atom = sig_.find_atom(id.text)) return make_apply(*atom, {}, id.span);
-        if (sig_.find_function(id.text)) fail("function '" + id.text + "' must be followed by '('", id.span);
+        if (sig_.find_function(id.text) || sig_.find_binder(id.text))
+            fail("'" + id.text + "' must be followed by '('", id.span);
         return std::make_unique<Variable>(id.text);
     }
 

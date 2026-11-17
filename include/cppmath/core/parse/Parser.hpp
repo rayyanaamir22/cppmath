@@ -15,9 +15,11 @@ namespace parse {
  *   expr    := prefix { infix-op expr }          (binds by precedence)
  *   prefix  := NUMBER | IDENT | IDENT '(' [expr {',' expr}] ')'
  *            | '(' expr ')' | prefix-op expr
+ *            | BINDER '(' IDENT ',' expr {',' expr} ')'      e.g. sum(i, 1, 10, i ^ 2)
  *
- * An identifier is, in order: a function call (if followed by '('), an Atom
- * of the Signature (pi, e), or a Variable. Implicit multiplication ("2x") is
+ * An identifier is, in order: a function call or binder (if followed by '('), an Atom
+ * of the Signature (pi, e), or a Variable. In a binder the first argument is the
+ * name of the variable it binds, followed by its operands (bounds, then the body). Implicit multiplication ("2x") is
  * not supported. Round-trip guarantee: `parse(e.toString())` equals `e`.
  * The Signature must outlive the Parser and the trees it returns.
  */

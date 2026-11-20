@@ -13,7 +13,8 @@ enum class Notation {
     Prefix,       ///< one operand:        -x
     Infix,        ///< two operands:       x + y
     FunctionCall, ///< any number:         sin(x), max(x, y, z)
-    Binder        ///< binds a variable:  sum(i, 1, 10, i)  (see Bind)
+    Binder,       ///< binds a variable:  sum(i, 1, 10, i)  (see Bind)
+    Bracket       ///< delimited list:    [a, b)  or  {a, b, c}  (symbol is the two delimiters)
 };
 
 /** @brief Grouping of a chain of equal-precedence infix operators. */
@@ -55,6 +56,9 @@ struct Properties {
  *    build them without extra checks.
  *  - A non-variadic operator lists exactly `arity.count` input sorts. A variadic
  *    one lists at least one; the last is reused for every extra argument.
+ *  - A Bracket operator's symbol is exactly two characters: an opening delimiter from
+ *    `( [ {` and a closing one from `) ] }`, e.g. `"[)"` for the half-open interval
+ *    `[a, b)`. Any arity is allowed (`{a, b, c}` is variadic).
  *  - A Binder operator has fixed arity >= 1. The arguments are the operands that
  *    follow the bound variable: any bounds, then the body as the **last** one
  *    (`sum` takes lo, hi, body, so arity 3). The bound variable itself is not an
@@ -64,7 +68,7 @@ class Operator {
 public:
     /**
      * @param name        canonical name, unique within a Signature.
-     * @param symbol      printed token (the function name for FunctionCall).
+     * @param symbol      printed token (the function name for FunctionCall; the two delimiters for Bracket).
      * @param arity       argument count.
      * @param input_sorts sort of each argument (see the class invariants).
      * @param output_sort sort of the result.

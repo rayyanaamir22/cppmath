@@ -57,18 +57,33 @@ public:
     const Operator* find_atom(const std::string& symbol) const { return find_symbol(Notation::Atom, symbol); }
     /// Binder written `symbol` (e.g. "sum"), or nullptr.
     const Operator* find_binder(const std::string& symbol) const { return find_symbol(Notation::Binder, symbol); }
-
-    /**
-     * @brief Whether `word` is an atom, function or binder name of this signature.
-     *
-     * Such words have a fixed meaning to the parser, so they cannot also be used as
-     * variable names: `Variable("sin")` would print as `sin`, which parses as a function.
-     */
-    bool is_reserved_word(const std::string& word) const {
-        return find_atom(word) || find_function(word) || find_binder(word);
+    /// Bracket operator with these delimiters (e.g. '[' and ')' for `[a, b)`), or nullptr.
+    const Operator* find_bracket(char open, char close) const {
+        return find_symbol(Notation::Bracket, std::string{open, close});
     }
 
-    /** @brief Symbols of all Infix/Prefix operators that the lexer must recognise as punctuation-like tokens. */
+    /**
+     * @brief Let `alias` be read as the operator called `op_name`, in addition to its own symbol.
+     *
+     * Aliases only affect reading: text is always printed with the operator's own symbol.
+     * The standard signature uses them for Unicode and ASCII spellings (`∈` for `in`, `≤` for `<=`).
+     * @throws std::invalid_argument if the operator is unknown, or `alias` is already used with the
+     *         same notation. Not allowed for Bracket operators.
+     */
+    void add_alias(const std::string& alias, const std::string& op_name);
+
+    /**
+     * @brief Whether `word` has a fixed meaning to the parser, so it cannot be a variable name.
+     *
+     * True for atoms, functions and binders, and for operators written as words (`and`, `in`, `U`):
+     * `Variable("sin")` would print as `sin`, which parses as a function. Aliases count too.
+     */
+    bool is_reserved_word(const std::string& word) const;
+
+    /**
+     * @brief Symbols (aliases included) of the Infix, Prefix and Atom operators that the lexer must
+     *        match as operator tokens. Word-like symbols are excluded: they lex as identifiers.
+     */
     std::vector<std::string> operator_symbols() const;
 
     /// Number of operators.
@@ -78,7 +93,8 @@ public:
      * @brief The built-in real-arithmetic vocabulary.
      *
      * Infix: + - * / ^ ; prefix: - ; functions: sin cos tan exp log sqrt abs ;
-     * atoms: pi e ; binders: sum prod (`sum(i, lo, hi, body)`). Precedence (loosest to tightest): + - (10), * / (20),
+     * atoms: pi e inf ; binders: sum prod (`sum(i, lo, hi, body)`). It also holds the
+     * relations, logic and set vocabulary: see the table in docs/architecture/core.md. Precedence (loosest to tightest): + - (10), * / (20),
      * prefix - (30), ^ (40, right-associative), so -x^2 means -(x^2).
      */
     static const Signature& standard();

@@ -49,8 +49,48 @@ ExprPtr var(const std::string& name) {
     return std::make_unique<Variable>(name);
 }
 
+ExprPtr var(const std::string& name, Sort sort) {
+    if (Signature::standard().is_reserved_word(name))
+        throw std::invalid_argument("var: '" + name + "' is a reserved word");
+    return std::make_unique<Variable>(name, std::move(sort));
+}
+
 ExprPtr pi() { return std::make_unique<Apply>(Signature::standard().get("pi"), std::vector<ExprPtr>()); }
 ExprPtr euler() { return std::make_unique<Apply>(Signature::standard().get("e"), std::vector<ExprPtr>()); }
+
+namespace {
+ExprPtr atom(const char* op_name) {
+    return std::make_unique<Apply>(Signature::standard().get(op_name), std::vector<ExprPtr>());
+}
+} // namespace
+
+ExprPtr boolean(bool value) { return atom(value ? "true" : "false"); }
+ExprPtr infinity() { return atom("inf"); }
+ExprPtr empty_set() { return atom("empty_set"); }
+ExprPtr reals() { return atom("universe"); }
+
+ExprPtr interval(ExprPtr lo, ExprPtr hi, bool lo_closed, bool hi_closed) {
+    const char* name = lo_closed ? (hi_closed ? "interval_cc" : "interval_co") : (hi_closed ? "interval_oc" : "interval_oo");
+    return make(name, std::move(lo), std::move(hi));
+}
+ExprPtr finite_set(std::vector<ExprPtr> elements) {
+    return std::make_unique<Apply>(Signature::standard().get("finite_set"), std::move(elements));
+}
+ExprPtr set_union(ExprPtr a, ExprPtr b) { return make("union", std::move(a), std::move(b)); }
+ExprPtr intersection(ExprPtr a, ExprPtr b) { return make("intersection", std::move(a), std::move(b)); }
+ExprPtr complement(ExprPtr a) { return make("complement", std::move(a)); }
+ExprPtr in(ExprPtr x, ExprPtr set) { return make("in", std::move(x), std::move(set)); }
+
+ExprPtr eq(ExprPtr a, ExprPtr b) { return make("eq", std::move(a), std::move(b)); }
+ExprPtr ne(ExprPtr a, ExprPtr b) { return make("ne", std::move(a), std::move(b)); }
+ExprPtr lt(ExprPtr a, ExprPtr b) { return make("lt", std::move(a), std::move(b)); }
+ExprPtr le(ExprPtr a, ExprPtr b) { return make("le", std::move(a), std::move(b)); }
+ExprPtr gt(ExprPtr a, ExprPtr b) { return make("gt", std::move(a), std::move(b)); }
+ExprPtr ge(ExprPtr a, ExprPtr b) { return make("ge", std::move(a), std::move(b)); }
+
+ExprPtr logical_and(ExprPtr a, ExprPtr b) { return make("and", std::move(a), std::move(b)); }
+ExprPtr logical_or(ExprPtr a, ExprPtr b) { return make("or", std::move(a), std::move(b)); }
+ExprPtr logical_not(ExprPtr a) { return make("not", std::move(a)); }
 
 ExprPtr add(ExprPtr a, ExprPtr b) { return make("add", std::move(a), std::move(b)); }
 ExprPtr sub(ExprPtr a, ExprPtr b) { return make("sub", std::move(a), std::move(b)); }

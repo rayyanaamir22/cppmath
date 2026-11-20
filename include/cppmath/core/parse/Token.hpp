@@ -10,9 +10,13 @@ namespace parse {
 enum class TokenKind {
     Number,      ///< 3, 0.25, 1e-3
     Identifier,  ///< x, sin, pi
-    Operator,    ///< a symbol registered in the Signature (+, -, ^, ...)
+    Operator,    ///< a non-word symbol registered in the Signature (+, -, ^, ∩, ∅, ...)
     LParen,
     RParen,
+    LBracket,    ///< [
+    RBracket,    ///< ]
+    LBrace,      ///< {
+    RBrace,      ///< }
     Comma,
     End          ///< end of input (always the last token)
 };

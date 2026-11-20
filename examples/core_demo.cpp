@@ -8,8 +8,11 @@
 #include "cppmath/core/RealInterpretation.hpp"
 #include "cppmath/core/Simplify.hpp"
 #include "cppmath/core/Substitution.hpp"
+#include "cppmath/core/ValueInterpretation.hpp"
 #include "cppmath/core/parse/ParseError.hpp"
 #include "cppmath/core/parse/Parser.hpp"
+#include "cppmath/sets/FiniteSet.hpp"
+#include "cppmath/sets/IntervalSet.hpp"
 
 using namespace cppmath::core;
 using cppmath::abstract_algebra::example::FiniteField;
@@ -86,6 +89,23 @@ int main() {
         std::cout << "d/dx " << f->toString() << "  =  " << df->toString() << "   (at x=1.5: " << evaluate_real(*df, at) << ")\n";
     }
     std::cout << "simplify((x + 0) * 1 + 2 * 3) = " << simplify(*parse::Parser().parse("(x + 0) * 1 + 2 * 3"))->toString() << "\n";
+
+    // Sets, relations and logic: values of different sorts in one expression. The text the sets library
+    // prints parses directly, so a set can be written, parsed and evaluated.
+    auto written = cppmath::sets::IntervalSet::closed_open(0, 1)->set_union(cppmath::sets::FiniteSet({1, 2}));
+    auto membership = parse::Parser().parse("x in " + written->toString() + " and not x = 1");
+    std::cout << "\n" << membership->toString() << "\n";
+    for (double x : {0.5, 1.0, 2.0, 3.0}) {
+        Environment<Value> env;
+        env.bind("x", Value::real(x));
+        std::cout << "  x = " << x << " -> " << (evaluate_value(*membership, env).as_bool() ? "true" : "false") << "\n";
+    }
+    // Variables that are not Reals are declared when parsing.
+    auto union_of = parse::Parser().parse("A U (B ∩ [0, 5])", {{"A", Sort::Set()}, {"B", Sort::Set()}});
+    Environment<Value> sets_env;
+    sets_env.bind("A", Value::set(cppmath::sets::IntervalSet::closed(-1, 0)));
+    sets_env.bind("B", Value::set(cppmath::sets::IntervalSet::closed(3, 9)));
+    std::cout << union_of->toString() << "  =  " << evaluate_value(*union_of, sets_env).toString() << "\n";
 
     // Errors in the text carry positions.
     try {

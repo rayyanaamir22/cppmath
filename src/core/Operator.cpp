@@ -23,11 +23,17 @@ Operator::Operator(std::string name, std::string symbol, Arity arity, std::vecto
         case Notation::Infix: required = 2; break;
         case Notation::FunctionCall: required = arity_.count; break;
         case Notation::Binder: required = arity_.count; break;
+        case Notation::Bracket: required = arity_.count; break;
     }
-    if (notation_ != Notation::FunctionCall && notation_ != Notation::Binder &&
+    if (notation_ != Notation::FunctionCall && notation_ != Notation::Binder && notation_ != Notation::Bracket &&
         (arity_.variadic || arity_.count != required))
         throw std::invalid_argument("Operator '" + name_ + "': this notation requires fixed arity " +
                                     std::to_string(required));
+    if (notation_ == Notation::Bracket &&
+        (symbol_.size() != 2 || std::string("([{").find(symbol_[0]) == std::string::npos ||
+         std::string(")]}").find(symbol_[1]) == std::string::npos))
+        throw std::invalid_argument("Operator '" + name_ + "': a bracket symbol must be an opening delimiter from ([{ "
+                                    "followed by a closing one from )]}, got '" + symbol_ + "'");
     // A binder needs a body, and a fixed operand list so the parser knows where the body is.
     if (notation_ == Notation::Binder && (arity_.variadic || arity_.count < 1))
         throw std::invalid_argument("Operator '" + name_ + "': a binder needs fixed arity >= 1 (its last operand is the body)");

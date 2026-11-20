@@ -71,6 +71,7 @@ DerivativeRules build_standard() {
     // Constants of the signature do not depend on anything.
     r.define("pi", [](const RuleContext&) { return b::num(0); });
     r.define("e", [](const RuleContext&) { return b::num(0); });
+    r.define("inf", [](const RuleContext&) { return b::num(0); });
     return r;
 }
 

@@ -86,6 +86,15 @@ TEST_CASE("binders have no meaning in F_p, and the error says so") {
     CHECK_FALSE(finite_field_interpretation(f7).defines("sum"));
 }
 
+TEST_CASE("relations, logic and sets have no meaning in F_p") {
+    auto f7 = std::make_shared<FiniteField>(7);
+    // F_p has no order, and sets of integers are not sets of field elements: undefined, not guessed
+    CHECK_THROWS_AS(eval_mod(*P("x < 3"), f7, 1), std::out_of_range);
+    CHECK_THROWS_AS(eval_mod(*P("x = 3"), f7, 1), std::out_of_range);
+    CHECK_THROWS_AS(eval_mod(*P("x in {1, 2}"), f7, 1), std::out_of_range);
+    CHECK_THROWS_AS(eval_mod(*P("x in [0, 1)"), f7, 1), std::out_of_range);
+}
+
 TEST_CASE("unbound variables and a null field") {
     auto f7 = std::make_shared<FiniteField>(7);
     Environment<FiniteFieldElement> empty;

@@ -12,7 +12,7 @@ make run-benchmarks
 | `linalg/bench_vector_simd` | `Vector` add/sub with `vectorize=false` vs `true`, N = 1e6 |
 | `numerics/bench_root_newton` | `newton_sqrt` vs `std::sqrt` (speed + mean abs error) |
 
-**Caveat:** the vector SIMD paths are AVX-only for now. On arm64 (Apple Silicon) both runs are scalar. See PLAN.md (NEON support).
+**Caveat:** the vector SIMD paths are AVX-only for now. On arm64 (Apple Silicon) both runs are scalar. See [plans/linalg/plan.md](../plans/linalg/plan.md) (NEON support) and [plans/utils/plan.md](../plans/utils/plan.md) (the benchmark harness).
 
 ## Results
 

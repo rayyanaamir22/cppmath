@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Guidance for working in this repo. For what to build next and current status, see [PLAN.md](PLAN.md).
+Guidance for working in this repo. For the project's goals and cross-module priorities see [PLAN.md](PLAN.md); for what to do in a module see its plan, [plans/<module>/plan.md](plans/).
 
 ## What this is
 
@@ -40,9 +40,10 @@ tests/<module>/test_*.cpp         doctest tests
 examples/<topic>_demo.cpp         runnable demos (print to stdout)
 benchmarks/<module>/bench_*.cpp   timing harnesses (std::chrono)
 docs/architecture/<module>.md     design docs / mermaid diagrams
+plans/<module>/plan.md            what to do next: status, roadmap, decisions needed
 ```
 
-Modules: `abstract_algebra`, `core` (symbolic expressions), `sets`, `linalg`, `numerics`, `number_theory`, `combinatorics`, `graph`, plus placeholder stubs (`calculus`, `geometry`, `stats`, `algebra`, `utils`).
+Modules: `abstract_algebra`, `algebra` (polynomials), `calculus`, `combinatorics`, `core` (symbolic expressions), `geometry`, `graph`, `linalg`, `number_theory`, `numerics`, `sets`, `stats`, `utils`. `algebra`, `geometry` and `stats` are still empty stubs; each module's status is in [PLAN.md](PLAN.md).
 
 ## Conventions
 
@@ -51,6 +52,7 @@ Modules: `abstract_algebra`, `core` (symbolic expressions), `sets`, `linalg`, `n
 - **Templates:** template definitions live in the header (e.g. `Matrix<T>` is header-only; `src/linalg/matrix.cpp` is intentionally empty).
 - **File naming:** class-per-file modules use `PascalCase.hpp` (`sets/`, `core/`, `abstract_algebra/`). Function-collection modules use `lowercase.hpp` (`prime.hpp`, `combo.hpp`, `root.hpp`).
 - **Docs:** every public API is documented. See [Documentation](#documentation) below.
+- **Plans vs architecture docs:** `plans/<module>/plan.md` says what to do; `docs/architecture/<module>.md` says how it is built. When you finish a roadmap item, tick it in the module's plan and move any lasting explanation of the design into the architecture doc. Keep `PLAN.md` to goals, the module index and cross-module tracks.
 - **Errors:** throw `std::invalid_argument` or `std::out_of_range` on dimension mismatch, bad index, or bad domain.
 
 ### Documentation

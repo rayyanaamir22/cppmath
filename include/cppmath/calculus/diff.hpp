@@ -29,9 +29,11 @@ using DerivativeRule = std::function<core::ExprPtr(const RuleContext&)>;
 /**
  * @brief A table of derivative rules, keyed by operator name.
  *
- * `standard()` covers every operator of `core::Signature::standard()` (`add sub mul div pow neg
- * sin cos tan exp log sqrt abs pi e`). To differentiate an operator you added to a Signature,
- * copy the standard table and `define` a rule for it:
+ * `standard()` covers the real-valued operators of `core::Signature::standard()` (`add sub mul div
+ * pow neg sin cos tan exp log sqrt abs` and the constants `pi e inf`). Relations, logic and set
+ * operators have no rule, since they are not real-valued, so differentiating them throws.
+ * To differentiate an operator you added to a Signature, copy the standard table and `define` a
+ * rule for it:
  *
  * @code
  *   calculus::DerivativeRules rules = calculus::DerivativeRules::standard();

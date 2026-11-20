@@ -61,8 +61,10 @@ std::vector<Token> Lexer::tokenize(const std::string& src) const {
             continue;
         }
 
-        if (ch == '(' || ch == ')' || ch == ',') {
-            TokenKind kind = ch == '(' ? TokenKind::LParen : ch == ')' ? TokenKind::RParen : TokenKind::Comma;
+        if (std::string("()[]{},").find(static_cast<char>(ch)) != std::string::npos) {
+            TokenKind kind = ch == '(' ? TokenKind::LParen : ch == ')' ? TokenKind::RParen
+                           : ch == '[' ? TokenKind::LBracket : ch == ']' ? TokenKind::RBracket
+                           : ch == '{' ? TokenKind::LBrace : ch == '}' ? TokenKind::RBrace : TokenKind::Comma;
             tokens.push_back({kind, std::string(1, src[i]), 0.0, span_at(start, 1)});
             ++i;
             continue;

@@ -1,87 +1,94 @@
 # cppmath Plan
 
-Living roadmap: current status, known issues, and what's next. Conventions and build instructions are in [CLAUDE.md](CLAUDE.md).
+cppmath is a personal C++17 math library that grows with a math-major's coursework, and doubles as a project for learning low-level acceleration. This file states what the project is for and how the work fits together. What to do in each module lives in [`plans/<module>/plan.md`](plans/). Build instructions and conventions are in [CLAUDE.md](CLAUDE.md); an overview is in [README.md](README.md).
 
-_Last reviewed: 2026-11-06 (branch `core`)._
+_Last reviewed: 2026-11-20._
 
-## Module status
+## Central goals
 
-| Module | Status | Tests | Notes |
-|---|---|---|---|
-| `abstract_algebra` | Group, Ring, Field, VectorSpace, Lie: abstract CRTP bases + example concrete types (S3, Z/nZ, FiniteField mod p) | `test_finite_field` ✅ | Demos for each structure. `*Element.cpp` files are empty stubs. |
-| `sets` | Interval, Finite, Union, Intersection, Empty, Universal | `test_sets` ✅ | `sets.hpp`/`sets.cpp` are empty stubs. `FiniteSet` is immutable (`with_element` / `without_element`). |
-| `core` (symbolic) | Generic `Apply(Operator, args)` AST over a `Signature`; `fold`/`transform`, `Substitution`, `Interpretation`/`Environment`/`evaluate`, Lexer + Pratt `Parser`, canonical printer, `Function` | `test_signature`, `test_expression`, `test_traversal`, `test_evaluate`, `test_parser` ✅ | Milestones 1-4, 6, 7 of [core/PLAN.md](include/cppmath/core/PLAN.md) done: binders (`sum`/`prod`, capture-avoiding substitution), a F_p interpretation, `simplify`. Only milestone 5 (sets through core) remains, blocked on the multi-sorted design. |
-| `linalg` | `Vector` (AVX add/sub), `Matrix<T>` (header-only, `operator*`) | `test_matrix` ✅, `test_vector` ✅ | `decomposition.cpp` is empty. |
-| `numerics` | Newton sqrt / cbrt | `test_root` ✅ | Has a benchmark. |
-| `number_theory` | `is_prime` and friends | `test_prime` ✅ | |
-| `combinatorics` | combinations / permutations | `test_combo` ✅ | |
-| `graph` | adjacency graph, `is_tree` | `test_graph` ✅ | |
-| `calculus` | `differentiate` (rule table, chain rule, `sum`) in `diff.hpp` | `test_diff` ✅ | Integration and partial derivatives not started. |
-| `geometry`, `stats`, `algebra` (polynomial) | Empty stubs | none | |
-| `utils` | `format.hpp`: `format_number` (shortest text that parses back exactly), shared by `core` and `sets` | covered via `test_sets`, `test_expression` | `utils.hpp` itself is a stub. |
+1. **Model the mathematics faithfully.** Class hierarchies mirror the definitions from the coursework (a field *is* a ring-like structure with two operations; a set is something you can test membership in). Correctness and the right abstraction come before features.
+2. **A symbolic engine: parse → manipulate → solve.** [core](plans/core/plan.md)'s expression trees are the centre:
+   - text is parsed into a tree;
+   - calculus, simplification and substitution transform it;
+   - interpretations evaluate it in any algebra (ℝ, F_p, sets, and soon matrices);
+   - the end goal is solving: equations, systems and integrals, symbolically where possible and numerically otherwise.
+3. **Low-level acceleration.** SIMD intrinsics (AVX and NEON), cache-friendly layouts, `constexpr`. Every fast path sits next to a plain scalar path, with a test that they agree and a benchmark that shows the difference.
+4. **A learning project.** Code explains its non-obvious parts, public APIs are documented (shown on hover), and simple abstractions beat clever ones.
 
-## Known issues
+## Modules
 
-Resolved 2026-11-04 (all 8 test targets and all examples/benchmarks now build; `make test` is green):
-- ~~`linalg/vector.hpp` didn't compile~~: it pointed at a stale `VectorElement` path, and `VectorElement` had since become a CRTP template that `Vector` no longer matched. `Vector` is now a standalone concrete class. `add()` / `scalar_multiply()` are kept as named equivalents of `+` and `*` and return by value (they used to return leaked raw pointers). `operator+=` / `-=` had definitions with a stray `bool` parameter that didn't match the header; they're now plain scalar loops.
-- ~~Duplicate print-only core tests~~: `test_core.cpp` deleted; `test_expression.cpp` is now a doctest suite (19 assertions).
-- ~~Makefile gaps~~: `lie_demo`, `matrix_demo`, `graph_demo`, `ml_pipeline` have rules and are in `EXAMPLES`; each benchmark has its own dependency rule; `make clean` removes benchmark binaries too.
+| Module | What it is | Status | Plan | How it's built |
+|---|---|---|---|---|
+| `core` | symbolic expressions: AST, parser, printer, interpretations, substitution, simplify | active | [plan](plans/core/plan.md) | [architecture](docs/architecture/core.md) |
+| `calculus` | differentiation; integration, limits, series next | active | [plan](plans/calculus/plan.md) | (see core's doc) |
+| `sets` | subsets of ℝ: intervals, finite sets, unions, intersections | active | [plan](plans/sets/plan.md) | [architecture](docs/architecture/sets.md) |
+| `abstract_algebra` | groups, rings, fields, vector spaces, Lie algebras | active | [plan](plans/abstract_algebra/plan.md) | [architecture](docs/architecture/abstract_algebra.md) |
+| `linalg` | vectors, matrices, decompositions; the SIMD reference module | active | [plan](plans/linalg/plan.md) | n/a |
+| `algebra` | concrete polynomials | stub | [plan](plans/algebra/plan.md) | n/a |
+| `number_theory` | primes, gcd, modular arithmetic | early | [plan](plans/number_theory/plan.md) | n/a |
+| `combinatorics` | counting and enumeration | early | [plan](plans/combinatorics/plan.md) | n/a |
+| `numerics` | root finding, quadrature, ODEs | early | [plan](plans/numerics/plan.md) | n/a |
+| `graph` | graphs, traversal, paths, spectra | early | [plan](plans/graph/plan.md) | n/a |
+| `geometry` | points, polygons, hulls, transforms in ℝⁿ | stub | [plan](plans/geometry/plan.md) | n/a |
+| `stats` | descriptive statistics, distributions, regression | stub | [plan](plans/stats/plan.md) | n/a |
+| `utils` | shared helpers (number formatting; SIMD, comparison, benchmarking next) | support | [plan](plans/utils/plan.md) | n/a |
 
-Resolved 2026-11-06 (found while documenting the headers; all covered by new tests):
-- ~~`IntervalSet::set_union` merged `(0,1) U (1,2)` into `(0,2)`~~, wrongly including 1. Touching ends now merge only if one of them contains the shared point. The same pass fixed shared-endpoint inclusivity (union takes either, intersection requires both) and `equals()` for infinite bounds.
-- ~~`FiniteSet` tolerance was inconsistent~~: `contains`/`equals` used 1e-9 but `intersect`/`set_union` compared exactly. All now use 1e-9. The mutating `add_element` / `remove_element` became `with_element` / `without_element`.
-- ~~`toString()` of sets printed 6 digits~~, so it couldn't round-trip. Sets now use `utils::format_number` (shortest text that parses back exactly), shared with `core`.
-- ~~`Ring`/`Field::identity()` returned 1 while `operate()` is addition~~. Identities now live on `AlgebraicOperation` (`has_identity()` / `identity(structure)`); `identity()` is the additive one (0), and `Ring::one()` / `Field::one()` is the multiplicative one. This generalises to structures with any number of operations.
-- ~~`FiniteField(p)` accepted composite p~~ (now `std::invalid_argument`). Negative values of `Z/nZ` / `F_p` elements are reduced into range. `FiniteFieldElement::inverse(0)` throws `invalid_argument`.
-- ~~`Matrix::operator*` returned a 0x0 matrix on a dimension mismatch~~; it now throws `std::invalid_argument`. `NumericAddition` checks lengths.
-- Missing `override` keywords added across `abstract_algebra`.
+_Active_ means real code and tests with a roadmap in progress. _Early_ means some functions exist, with known gaps or bugs listed in the plan. _Stub_ means an empty header and source, with a proposed scope.
 
-Still open (need design decisions or analysis):
-1. **SIMD paths never run on the dev machine (arm64).** They're AVX-only, so on Apple Silicon `vectorize=true` falls back to scalar; the benchmark compares scalar with itself (confirmed: identical timings). Needs NEON implementations (see "Linear algebra + SIMD").
-2. **`Vector` is disconnected from `abstract_algebra`.** It used to inherit `VectorElement`. To reconnect it, decide how `Vector` relates to `VectorSpace` (e.g. `Vector` as the element type of a `RealVectorSpace<n>`, with the structure supplying the operations), since `VectorElement` is a CRTP template that needs a `StructureType`.
-3. **`Field.hpp` <-> `FieldElement.hpp` include each other.** It compiles (include guards plus the order the files are included in), but it's fragile. Needs analysis: forward-declare, or split the example `FiniteField` types into their own header.
-4. **Makefile is hand-maintained.** It works, but every new file needs a manual entry. Consider CMake (the machine has it) or wildcard rules. Note `make` here is Apple's GNU Make 3.81, so avoid newer GNU Make features.
-5. **`Vector` compound ops (`+=`, `-=`) have no SIMD / `vectorize` option**, unlike `vector_add` / `vector_sub`.
+## Cross-module tracks
 
-## Next up
+Work that spans modules, in priority order. Each step names the plan that owns it; tick items there, not here.
 
-### 1. Symbolic core → calculus (current branch focus)
-- [x] Evaluation environment: `evaluate(expr, interp, env)` / `evaluate_real(expr, env)`.
-- [x] Missing nodes: Subtract, Divide, Negate (now operators in `Signature::standard()`).
-- [x] `Operator` with arbitrary arity (`Arity::fixed` / `at_least`).
-- [x] Simplification pass: `core::simplify` (identities, sign handling, exact constant folding; idempotent). Still open: combining like terms, `x*x → x^2`.
-- [x] Symbolic differentiation: `calculus::differentiate` with an extensible rule table, chain rule, and `sum`. Still open: partial derivatives/gradients, `prod`, integration.
-- [x] `Function` checks domain/codomain on call; `log`, `sqrt`, `div`, `pow` validate their domains.
+### 1. Symbolic engine (first priority)
+1. **Overload resolution** in core: several operators per symbol, chosen by sort ([core](plans/core/plan.md) item 1).
+2. **A matrix interpretation:** matrices and vectors as expression values ([core](plans/core/plan.md) item 2, [linalg](plans/linalg/plan.md) item 7).
+3. **Calculus:** partial derivatives, Taylor polynomials, then integration with a numerical fallback ([calculus](plans/calculus/plan.md) items 1–5, [numerics](plans/numerics/plan.md) item 2).
+4. **Polynomials:** `Polynomial<T>` and conversion to and from expressions, which also gives `simplify` like-term collection ([algebra](plans/algebra/plan.md) items 2–5).
+5. **Solving:** `solve(equation, x)` that dispatches by shape:
+   - linear systems → [linalg](plans/linalg/plan.md) decompositions;
+   - polynomial equations → [algebra](plans/algebra/plan.md) roots;
+   - anything else → [numerics](plans/numerics/plan.md) root finding on the expression.
+   It returns exact solutions where it can and numerical ones (with tolerance) otherwise. Where `solve` lives (core consumer, or a new `solve` module) is decided when it starts.
 
-### 2. AST parser
-- [x] Tokenizer + Pratt parser from string → `Expression` tree; round-trips `toString()`.
-- [ ] Parse set notation (`[0, 1)`, `{1, 2}`, `A U B`, `A ∩ B`) into `Set` trees.
+### 2. SIMD and performance
+1. **The shared helper** `utils/simd.hpp` with AVX and NEON ([utils](plans/utils/plan.md) item 1), so SIMD finally runs on the arm64 dev machine.
+2. **linalg kernels:** NEON add/sub, FMA dot product, blocked and SIMD matrix multiply ([linalg](plans/linalg/plan.md) items 1–4).
+3. **SIMD reductions** in [stats](plans/stats/plan.md) (item 2).
+4. **Batch evaluation** of expressions over many points ([numerics](plans/numerics/plan.md), [core](plans/core/plan.md)).
+5. **A benchmark harness** and recorded results ([utils](plans/utils/plan.md) item 3, [benchmarks/benchmarks.md](benchmarks/benchmarks.md)).
+6. **`constexpr` tables** ([combinatorics](plans/combinatorics/plan.md), [number_theory](plans/number_theory/plan.md)) and Cayley tables ([abstract_algebra](plans/abstract_algebra/plan.md)), each benchmarked.
 
-### 3. Sets
-- [x] Dedicated `tests/sets/test_sets.cpp` doctest suite. Still to cover: `UnionSet`/`IntersectionSet` simplification and `complement()` of composites.
-- [ ] Use sets as `Function` domain and codomain everywhere.
+### 3. Abstract algebra
+Clean-up → polynomial rings (needs [algebra](plans/algebra/plan.md)) → quotient structures and GF(pⁿ) → Sₙ → modules → Galois theory → representations (needs [linalg](plans/linalg/plan.md)). See [abstract_algebra](plans/abstract_algebra/plan.md). Category theory is exploratory and shared with core.
 
-### 4. Linear algebra + SIMD
-- [ ] Add ARM NEON paths to `Vector` (`float64x2_t`, `vaddq_f64`/`vsubq_f64`).
-- [ ] Factor the per-ISA code behind a small internal helper (`detail/simd.hpp`) so each op isn't three copies of the loop.
-- [ ] SIMD `dot_product` (horizontal reduction) and `magnitude`. Use FMA (`_mm256_fmadd_pd` / `vfmaq_f64`) where it's available.
-- [ ] Matrix: SIMD + cache-blocked `operator*`, transpose, then decompositions (LU, QR) in `decomposition.cpp`.
-- [ ] Benchmarks: run each case several times, report min/median, prevent dead-code elimination. Record results in `benchmarks/benchmarks.md`.
+### 4. Correctness backlog
+Bugs found while writing the plans, each listed in its module's plan:
+- **number_theory:** `gcd`, `lcm` and `next_prime` are unimplemented, and the tests assert that they throw.
+- **graph:** dangling `GraphNode` pointers; `is_tree` is unimplemented.
+- **combinatorics:** `binomial_coefficient` overflows past 20!.
+- **Error types:** several modules use `std::runtime_error` against the convention.
+- **abstract_algebra:** relative includes and a header cycle.
 
-### 5. Abstract algebra
-- [ ] Polynomial rings (fills `algebra/polynomial.cpp`).
-- [ ] Quotient structures (quotient groups, rings, fields).
-- [ ] Modules over rings.
-- [ ] Galois theory: field extensions, Galois groups.
-- [ ] Representation theory: group representations, which ties into `linalg::Matrix`.
-- [ ] Category theory: categorical abstractions over the existing structures (exploratory).
+These are small, and worth clearing before building on those modules.
 
-## Optimization ideas
-- **Cayley tables for finite structures.** Precompute the operation tables for finite groups and fields as a flat `n×n` array indexed by element ordinals. This turns repeated composition into O(1) lookups and trades memory for speed. It would also make a good benchmark target.
-- **SIMD/vectorization** beyond `Vector`: matrix ops, batched modular arithmetic for finite fields, and vectorised expression evaluation over many inputs.
-- **Lazy evaluation / expression templates** for chains of vector and matrix operations, to avoid temporaries.
-- **Parallelism** (`std::execution`, threads) for large matrix and graph computations.
-- **constexpr** for small number-theory and combinatorics routines (primes, binomials).
+### 5. Infrastructure
+- **Build system.** The Makefile is hand-maintained: every new test or `.cpp` needs a manual rule. Options: wildcard rules (`core` already uses `$(wildcard ...)`), or CMake (installed on the dev machine). `make` here is Apple's GNU Make 3.81, so avoid newer GNU Make features.
+- **Documentation upkeep:** the CLAUDE.md documentation rules (Doxygen on every public API, `-Wdocumentation` clean) and the plan/doc split below.
+
+## How plans work
+
+- **One plan per module:** `plans/<module>/plan.md`, mirroring `src/<module>` and `include/cppmath/<module>`.
+- **Same shape everywhere:** Status (what exists, known bugs) → Roadmap (ordered checkboxes; each with the files it touches, its tests, and when it's done) → Performance → Connections → Decisions needed.
+- **Proposed scope** in early modules is marked *proposed*: trim it freely.
+- **Plans say what to do; [`docs/architecture/<module>.md`](docs/architecture/) says how it is built.** When a roadmap item is finished, tick it in the plan and move any lasting "how it works" explanation into the architecture doc (create one when a module's design settles).
+- This file holds only goals, the module index and cross-module tracks. Resolved work is in git history.
 
 ## Long-term vision
-The AST-parseable string forms of sets and expressions are groundwork for a single symbolic calculus engine: parse → manipulate → differentiate and integrate → evaluate over a domain set. Abstract algebra and linear algebra connect to it through polynomial rings and representations.
+
+A single symbolic mathematics engine. You type an expression or equation, then:
+- it is parsed into a tree;
+- it is manipulated (simplified, differentiated, integrated, substituted);
+- it is solved;
+- it is evaluated over whatever structure it lives in: real numbers, finite fields, sets, matrices, polynomial rings.
+
+Abstract algebra supplies the structures, linear algebra and numerics the fast numerical machinery, and core's signature/interpretation design keeps them connected, with room for a category-theoretic view of the whole.

@@ -13,7 +13,7 @@ BENCHMARKS := $(patsubst benchmarks/%.cpp,benchmarks/%,$(wildcard benchmarks/*/*
 
 # Define groups - manually list tests for now (can be automated later)
 TESTS = test_matrix test_graph test_root test_vector test_combo test_prime test_finite_field test_structures test_sets test_field_interpretation test_diff \
-	test_signature test_expression test_traversal test_evaluate test_binders test_simplify test_parser
+	test_signature test_expression test_traversal test_evaluate test_binders test_simplify test_setexpr test_parser
 # Source groups. core is linked as a whole: its pieces depend on each other (the
 # printer behind Expression::toString, the Signature behind the builders, ...).
 CORE_SRC = $(wildcard src/core/*.cpp) $(wildcard src/core/parse/*.cpp)
@@ -109,6 +109,9 @@ test_simplify: tests/core/test_simplify.cpp $(CORE_SRC) $(SETS_SRC)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 test_diff: tests/calculus/test_diff.cpp src/calculus/diff.cpp $(CORE_SRC) $(SETS_SRC)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+test_setexpr: tests/core/test_setexpr.cpp src/calculus/diff.cpp $(CORE_SRC) $(SETS_SRC)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 test_parser: tests/core/test_parser.cpp $(CORE_SRC) $(SETS_SRC)

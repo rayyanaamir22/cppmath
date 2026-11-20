@@ -3,6 +3,8 @@
 #include "cppmath/sets/IntersectionSet.hpp"
 #include "cppmath/sets/EmptySet.hpp"
 #include "cppmath/sets/UniversalSet.hpp"
+#include "cppmath/utils/format.hpp"
+#include <algorithm>
 #include <sstream>
 #include <limits>
 #include <cmath>
@@ -13,8 +15,21 @@ namespace sets {
 namespace {
     // margin of error for double equality
     constexpr double EPSILON = 1e-9;
+    // `a == b` first, because inf - inf is NaN and would make equal infinite bounds compare unequal.
     bool double_eq(double a, double b) {
-        return std::fabs(a - b) < EPSILON;
+        return a == b || std::fabs(a - b) < EPSILON;
+    }
+
+    // True if the union of a and b is one connected interval: neither lies strictly
+    // before the other. Where they meet at a single point, at least one must contain it:
+    // (0, 1) and (1, 2) leave out 1, so they stay separate; [0, 1] and (1, 2) join.
+    bool forms_one_interval(const IntervalSet& a, const IntervalSet& b) {
+        auto reaches = [](const IntervalSet& left, const IntervalSet& right) {
+            if (double_eq(left.upper_bound, right.lower_bound))
+                return left.upper_inclusive || right.lower_inclusive;
+            return left.upper_bound > right.lower_bound;
+        };
+        return reaches(a, b) && reaches(b, a);
     }
 }
 
@@ -56,40 +71,31 @@ bool IntervalSet::contains(double value) const {
 }
 
 std::unique_ptr<Set> IntervalSet::set_union(const Set& other) const {
-    // If other is also IntervalSet, try to merge
-    auto other_interval = dynamic_cast<const IntervalSet*>(&other);
-    if (other_interval) {
-        // Check for overlap or adjacency
-        double a1 = lower_bound, b1 = upper_bound;
-        double a2 = other_interval->lower_bound, b2 = other_interval->upper_bound;
-        bool can_merge = false;
-        if (b1 > a2 || double_eq(b1, a2)) can_merge = true;
-        if (b2 > a1 || double_eq(b2, a1)) can_merge = true;
-        if (can_merge && (
-            (b1 > a2 && a1 < b2) || double_eq(b1, a2) || double_eq(b2, a1))) {
-            double new_lower = std::min(a1, a2);
-            double new_upper = std::max(b1, b2);
-            bool new_lower_inc = (new_lower == a1) ? lower_inclusive : other_interval->lower_inclusive;
-            bool new_upper_inc = (new_upper == b1) ? upper_inclusive : other_interval->upper_inclusive;
-            return std::make_unique<IntervalSet>(new_lower, new_upper, new_lower_inc, new_upper_inc);
-        }
+    auto o = dynamic_cast<const IntervalSet*>(&other);
+    if (o && forms_one_interval(*this, *o)) {
+        double lo = std::min(lower_bound, o->lower_bound);
+        double hi = std::max(upper_bound, o->upper_bound);
+        // An end is included if *either* interval has that endpoint and includes it.
+        bool lo_inc = (double_eq(lower_bound, lo) && lower_inclusive) || (double_eq(o->lower_bound, lo) && o->lower_inclusive);
+        bool hi_inc = (double_eq(upper_bound, hi) && upper_inclusive) || (double_eq(o->upper_bound, hi) && o->upper_inclusive);
+        return std::make_unique<IntervalSet>(lo, hi, lo_inc, hi_inc);
     }
-    // Otherwise, return a UnionSet
+    // Disjoint, or not an interval: keep both parts.
     return std::make_unique<UnionSet>(this->clone(), other.clone());
 }
 
 std::unique_ptr<Set> IntervalSet::intersect(const Set& other) const {
-    auto other_interval = dynamic_cast<const IntervalSet*>(&other);
-    if (other_interval) {
-        double new_lower = std::max(lower_bound, other_interval->lower_bound);
-        double new_upper = std::min(upper_bound, other_interval->upper_bound);
-        bool new_lower_inc = (lower_bound < other_interval->lower_bound) ? other_interval->lower_inclusive : lower_inclusive;
-        bool new_upper_inc = (upper_bound > other_interval->upper_bound) ? other_interval->upper_inclusive : upper_inclusive;
-        if (new_lower < new_upper || (double_eq(new_lower, new_upper) && new_lower_inc && new_upper_inc)) {
-            return std::make_unique<IntervalSet>(new_lower, new_upper, new_lower_inc, new_upper_inc);
-        } else {
-            return EmptySet::instance().clone();
+    auto o = dynamic_cast<const IntervalSet*>(&other);
+    if (o) {
+        double lo = std::max(lower_bound, o->lower_bound);
+        double hi = std::min(upper_bound, o->upper_bound);
+        // An end is included only if *every* interval whose endpoint it is includes it.
+        bool lo_inc = (!double_eq(lower_bound, lo) || lower_inclusive) && (!double_eq(o->lower_bound, lo) || o->lower_inclusive);
+        bool hi_inc = (!double_eq(upper_bound, hi) || upper_inclusive) && (!double_eq(o->upper_bound, hi) || o->upper_inclusive);
+        if (lo < hi || (double_eq(lo, hi) && lo_inc && hi_inc)) {
+            return std::make_unique<IntervalSet>(lo, hi, lo_inc, hi_inc);
         }
+        return EmptySet::instance().clone();
     }
     return std::make_unique<IntersectionSet>(this->clone(), other.clone());
 }
@@ -119,10 +125,10 @@ std::string IntervalSet::toString() const {
     std::ostringstream oss;
     oss << (lower_inclusive ? "[" : "(");
     if (std::isinf(lower_bound)) oss << (lower_bound < 0 ? "-inf" : "inf");
-    else oss << lower_bound;
+    else oss << utils::format_number(lower_bound);
     oss << ", ";
     if (std::isinf(upper_bound)) oss << (upper_bound > 0 ? "inf" : "-inf");
-    else oss << upper_bound;
+    else oss << utils::format_number(upper_bound);
     oss << (upper_inclusive ? "]" : ")");
     return oss.str();
 }

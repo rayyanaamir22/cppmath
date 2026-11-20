@@ -35,11 +35,14 @@ int main() {
     std::cout << "A * B = \n";
     print_matrix(C);
 
-    // Invalid multiplication (should log error)
+    // Invalid multiplication: incompatible dimensions throw std::invalid_argument
     Matrix<double> D(2, 2);
-    Matrix<double> E = A * D;
-    std::cout << "A * D (invalid) = \n";
-    print_matrix(E);
+    try {
+        Matrix<double> E = A * D;
+        print_matrix(E);
+    } catch (const std::invalid_argument& e) {
+        std::cout << "A * D (invalid): " << e.what() << "\n";
+    }
 
     return 0;
 } 

@@ -86,9 +86,7 @@ TEST_CASE("Zero matrix properties") {
 TEST_CASE("Matrix multiplication dimension mismatch") {
     cppmath::linalg::Matrix<int> a(2, 3);
     cppmath::linalg::Matrix<int> b(4, 2); // incompatible
-    auto c = a * b;
-    CHECK(c.rows() == 0);
-    CHECK(c.cols() == 0);
+    CHECK_THROWS_AS(a * b, std::invalid_argument);
 }
 
 TEST_CASE("Determinant computation (not implemented)") {

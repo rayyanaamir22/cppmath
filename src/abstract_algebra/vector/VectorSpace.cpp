@@ -1,5 +1,6 @@
 #include "../../../include/cppmath/abstract_algebra/vector/VectorSpace.hpp"
 #include <memory>
+#include <stdexcept>
 #include <vector>
 #include <cmath>
 
@@ -12,6 +13,10 @@ R2Vector R2Addition::operate(const R2Vector& a, const R2Vector& b, const R2Vecto
 }
 bool R2Addition::is_associative(const R2VectorSpace&) const { return true; }
 bool R2Addition::is_commutative(const R2VectorSpace&) const { return true; }
+bool R2Addition::has_identity(const R2VectorSpace&) const { return true; }
+R2Vector R2Addition::identity(const R2VectorSpace& vs) const {
+    return R2Vector(std::make_shared<R2VectorSpace>(vs), 0.0, 0.0);
+}
 
 // --- R2ScalarMultiplication ---
 R2ScalarMultiplication::R2ScalarMultiplication() : cppmath::abstract_algebra::AlgebraicOperation<R2Vector, R2VectorSpace>("R2ScalarMultiplication", 2) {}
@@ -27,7 +32,6 @@ bool R2ScalarMultiplication::is_commutative(const R2VectorSpace&) const { return
 R2VectorSpace::R2VectorSpace() : VectorSpace("R^2", 0), add_op_(), scalar_mul_op_() {}
 const cppmath::abstract_algebra::AlgebraicOperation<R2Vector, R2VectorSpace>& R2VectorSpace::addition_op() const { return add_op_; }
 const cppmath::abstract_algebra::AlgebraicOperation<R2Vector, R2VectorSpace>& R2VectorSpace::scalar_multiplication_op() const { return scalar_mul_op_; }
-R2Vector R2VectorSpace::identity() const { return R2Vector(std::make_shared<R2VectorSpace>(*this), 0.0, 0.0); }
 bool R2VectorSpace::contains(const R2Vector& element) const {
     // For demo, accept all vectors
     return true;
@@ -64,6 +68,8 @@ R2Vector R2Vector::operate(const R2Vector& other, const R2VectorSpace& vs) const
 // --- NumericAddition ---
 NumericAddition::NumericAddition() : cppmath::abstract_algebra::AlgebraicOperation<NumericVectorElement, NumericVectorSpace>("NumericAddition", 2) {}
 NumericVectorElement NumericAddition::operate(const NumericVectorElement& a, const NumericVectorElement& b, const NumericVectorSpace& vs) const {
+    if (a.data().size() != b.data().size())
+        throw std::invalid_argument("NumericAddition: vectors must have the same length");
     std::vector<double> result(a.data().size());
     for (size_t i = 0; i < result.size(); ++i)
         result[i] = a.data()[i] + b.data()[i];
@@ -71,10 +77,16 @@ NumericVectorElement NumericAddition::operate(const NumericVectorElement& a, con
 }
 bool NumericAddition::is_associative(const NumericVectorSpace&) const { return true; }
 bool NumericAddition::is_commutative(const NumericVectorSpace&) const { return true; }
+bool NumericAddition::has_identity(const NumericVectorSpace&) const { return true; }
+NumericVectorElement NumericAddition::identity(const NumericVectorSpace& vs) const {
+    return NumericVectorElement(std::make_shared<NumericVectorSpace>(vs), std::vector<double>(vs.dim(), 0.0));
+}
 
 // --- NumericScalarMultiplication ---
 NumericScalarMultiplication::NumericScalarMultiplication() : cppmath::abstract_algebra::AlgebraicOperation<NumericVectorElement, NumericVectorSpace>("NumericScalarMultiplication", 2) {}
 NumericVectorElement NumericScalarMultiplication::operate(const NumericVectorElement& v, const NumericVectorElement& scalar_as_vector, const NumericVectorSpace& vs) const {
+    if (scalar_as_vector.data().empty())
+        throw std::invalid_argument("NumericScalarMultiplication: the scalar vector must be non-empty");
     double s = scalar_as_vector.data()[0];
     std::vector<double> result(v.data().size());
     for (size_t i = 0; i < result.size(); ++i)
@@ -88,7 +100,6 @@ bool NumericScalarMultiplication::is_commutative(const NumericVectorSpace&) cons
 NumericVectorSpace::NumericVectorSpace(size_t dim) : VectorSpace("R^n", 0), add_op_(), scalar_mul_op_(), dim_(dim) {}
 const cppmath::abstract_algebra::AlgebraicOperation<NumericVectorElement, NumericVectorSpace>& NumericVectorSpace::addition_op() const { return add_op_; }
 const cppmath::abstract_algebra::AlgebraicOperation<NumericVectorElement, NumericVectorSpace>& NumericVectorSpace::scalar_multiplication_op() const { return scalar_mul_op_; }
-NumericVectorElement NumericVectorSpace::identity() const { return NumericVectorElement(std::make_shared<NumericVectorSpace>(*this), std::vector<double>(dim_, 0.0)); }
 bool NumericVectorSpace::contains(const NumericVectorElement& element) const {
     return element.data().size() == dim_;
 }

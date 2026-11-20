@@ -12,8 +12,14 @@ endif
 BENCHMARKS := $(patsubst benchmarks/%.cpp,benchmarks/%,$(wildcard benchmarks/*/*.cpp))
 
 # Define groups - manually list tests for now (can be automated later)
-TESTS = test_matrix test_graph test_root test_vector test_combo test_prime test_finite_field test_expression
-EXAMPLES = field_demo vector_demo group_demo ring_demo vsp_demo lie_demo set_demo matrix_demo graph_demo ml_pipeline
+TESTS = test_matrix test_graph test_root test_vector test_combo test_prime test_finite_field test_structures test_sets test_field_interpretation test_diff \
+	test_signature test_expression test_traversal test_evaluate test_binders test_simplify test_setexpr test_parser
+# Source groups. core is linked as a whole: its pieces depend on each other (the
+# printer behind Expression::toString, the Signature behind the builders, ...).
+CORE_SRC = $(wildcard src/core/*.cpp) $(wildcard src/core/parse/*.cpp)
+SETS_SRC = src/sets/IntervalSet.cpp src/sets/FiniteSet.cpp src/sets/UnionSet.cpp src/sets/IntersectionSet.cpp src/sets/EmptySet.cpp src/sets/UniversalSet.cpp
+
+EXAMPLES = field_demo vector_demo group_demo ring_demo vsp_demo lie_demo set_demo matrix_demo graph_demo ml_pipeline core_demo
 
 all: $(TESTS) $(EXAMPLES)
 
@@ -44,6 +50,9 @@ graph_demo: examples/graph_demo.cpp src/graph/graph.cpp
 ml_pipeline: examples/ml_pipeline.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
+core_demo: examples/core_demo.cpp src/abstract_algebra/field/Field.cpp src/abstract_algebra/field/FieldInterpretation.cpp src/calculus/diff.cpp $(CORE_SRC) $(SETS_SRC)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
 set_demo: examples/set_demo.cpp src/sets/IntervalSet.cpp src/sets/FiniteSet.cpp src/sets/UnionSet.cpp src/sets/IntersectionSet.cpp src/sets/EmptySet.cpp src/sets/UniversalSet.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
@@ -72,7 +81,40 @@ test_prime: tests/number_theory/test_prime.cpp src/number_theory/prime.cpp src/n
 test_finite_field: tests/abstract_algebra/field/test_finite_field.cpp src/abstract_algebra/field/Field.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
-test_expression: tests/core/test_expression.cpp src/core/Variable.cpp src/core/Constant.cpp src/core/BinaryOperations.cpp src/core/UnaryOperations.cpp src/core/Function.cpp src/sets/IntervalSet.cpp src/sets/FiniteSet.cpp src/sets/UnionSet.cpp src/sets/IntersectionSet.cpp src/sets/EmptySet.cpp src/sets/UniversalSet.cpp
+test_signature: tests/core/test_signature.cpp $(CORE_SRC) $(SETS_SRC)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+test_field_interpretation: tests/abstract_algebra/field/test_field_interpretation.cpp src/abstract_algebra/field/Field.cpp src/abstract_algebra/field/FieldInterpretation.cpp $(CORE_SRC) $(SETS_SRC)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+test_structures: tests/abstract_algebra/test_structures.cpp src/abstract_algebra/field/Field.cpp src/abstract_algebra/group/Group.cpp src/abstract_algebra/lie/Lie.cpp src/abstract_algebra/ring/Ring.cpp src/abstract_algebra/vector/VectorSpace.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+test_sets: tests/sets/test_sets.cpp $(SETS_SRC)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+test_expression: tests/core/test_expression.cpp $(CORE_SRC) $(SETS_SRC)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+test_traversal: tests/core/test_traversal.cpp $(CORE_SRC) $(SETS_SRC)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+test_evaluate: tests/core/test_evaluate.cpp $(CORE_SRC) $(SETS_SRC)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+test_binders: tests/core/test_binders.cpp $(CORE_SRC) $(SETS_SRC)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+test_simplify: tests/core/test_simplify.cpp $(CORE_SRC) $(SETS_SRC)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+test_diff: tests/calculus/test_diff.cpp src/calculus/diff.cpp $(CORE_SRC) $(SETS_SRC)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+test_setexpr: tests/core/test_setexpr.cpp src/calculus/diff.cpp $(CORE_SRC) $(SETS_SRC)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+test_parser: tests/core/test_parser.cpp $(CORE_SRC) $(SETS_SRC)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 clean:

@@ -4,7 +4,7 @@ A math library in C++, supporting numerous concepts I've learned as a math major
 
 Alongside the math, it's a playground for low-level acceleration in C++: SIMD intrinsics, cache-friendly layouts, and templates, each benchmarked against a plain scalar version.
 
-**What's in it:** abstract algebra (groups, rings, fields, vector spaces, Lie algebras), set theory, a symbolic expression core, linear algebra, numerics, number theory, combinatorics, and graph theory. See [PLAN.md](PLAN.md) for per-module status and the roadmap.
+**What's in it:** abstract algebra (groups, rings, fields, vector spaces, Lie algebras), set theory, a symbolic expression core, linear algebra, numerics, number theory, combinatorics, and graph theory. See [PLAN.md](PLAN.md) for the project's goals and module status, and [plans/](plans/) for each module's roadmap.
 
 ## Getting started
 
@@ -35,7 +35,9 @@ g++ -std=c++17 -Iinclude -Iinclude/doctest/doctest -o test_graph tests/graph/tes
 
 ## Docs
 
-- [PLAN.md](PLAN.md): status, known issues, roadmap
+- [PLAN.md](PLAN.md): goals, module index, cross-module priorities
+- [plans/](plans/): what to do in each module, e.g. [plans/core/plan.md](plans/core/plan.md)
+- [docs/architecture/core.md](docs/architecture/core.md): how the symbolic core is built
 - [CLAUDE.md](CLAUDE.md): repo conventions (layout, namespaces, SIMD and testing patterns)
 - [docs/architecture/abstract_algebra.md](docs/architecture/abstract_algebra.md): algebraic structure class hierarchy
 - [docs/architecture/sets.md](docs/architecture/sets.md): set class hierarchy

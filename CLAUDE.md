@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Guidance for working in this repo. For what to build next and current status, see [PLAN.md](PLAN.md).
+Guidance for working in this repo. For the project's goals and cross-module priorities see [PLAN.md](PLAN.md); for what to do in a module see its plan, [plans/<module>/plan.md](plans/).
 
 ## What this is
 
@@ -40,9 +40,10 @@ tests/<module>/test_*.cpp         doctest tests
 examples/<topic>_demo.cpp         runnable demos (print to stdout)
 benchmarks/<module>/bench_*.cpp   timing harnesses (std::chrono)
 docs/architecture/<module>.md     design docs / mermaid diagrams
+plans/<module>/plan.md            what to do next: status, roadmap, decisions needed
 ```
 
-Modules: `abstract_algebra`, `core` (symbolic expressions), `sets`, `linalg`, `numerics`, `number_theory`, `combinatorics`, `graph`, plus placeholder stubs (`calculus`, `geometry`, `stats`, `algebra`, `utils`).
+Modules: `abstract_algebra`, `algebra` (polynomials), `calculus`, `combinatorics`, `core` (symbolic expressions), `geometry`, `graph`, `linalg`, `number_theory`, `numerics`, `sets`, `stats`, `utils`. `algebra`, `geometry` and `stats` are still empty stubs; each module's status is in [PLAN.md](PLAN.md).
 
 ## Conventions
 
@@ -50,8 +51,24 @@ Modules: `abstract_algebra`, `core` (symbolic expressions), `sets`, `linalg`, `n
 - **Headers:** `#pragma once`. Include paths go from `include/`: `#include "cppmath/sets/Set.hpp"`. Prefer this over `../` relative includes (a stale one broke `Vector` once).
 - **Templates:** template definitions live in the header (e.g. `Matrix<T>` is header-only; `src/linalg/matrix.cpp` is intentionally empty).
 - **File naming:** class-per-file modules use `PascalCase.hpp` (`sets/`, `core/`, `abstract_algebra/`). Function-collection modules use `lowercase.hpp` (`prime.hpp`, `combo.hpp`, `root.hpp`).
-- **Docs:** Doxygen-style `/** @brief ... */` on public APIs.
+- **Docs:** every public API is documented. See [Documentation](#documentation) below.
+- **Plans vs architecture docs:** `plans/<module>/plan.md` says what to do; `docs/architecture/<module>.md` says how it is built. When you finish a roadmap item, tick it in the module's plan and move any lasting explanation of the design into the architecture doc. Keep `PLAN.md` to goals, the module index and cross-module tracks.
 - **Errors:** throw `std::invalid_argument` or `std::out_of_range` on dimension mismatch, bad index, or bad domain.
+
+### Documentation
+
+Doc comments are mandatory for the public API. In VS Code the C/C++ extension (cpptools) shows them on hover and in completion, much like Python docstrings, though unlike Python they aren't available at runtime.
+
+- **What:** every public class, struct, enum and free function, and every public or protected method, declared under `include/`.
+- **Where:** immediately above the declaration in the **header**, because hover reads it from there even when the definition is in a `.cpp`. `.cpp` files keep ordinary `//` comments explaining how and why, not a second copy of the doc.
+- **Format:** `/** @brief One sentence. */`, plus a paragraph when the math or design needs it. Add `@param` / `@return` when the name and type don't already say it. Always add `@throws` for every exception type a function can throw. Use `@code ... @endcode` for a short example where it helps.
+- **Classes:** say what mathematical object the class models, the invariant it keeps, and any ownership or lifetime rules (e.g. a non-owning pointer that must outlive the object).
+- **Shortcuts:**
+  - Trivial accessors may use a one-line `///`.
+  - Enum values and fields use a trailing `///<`.
+  - An override needs no comment if the base virtual is documented and the behaviour is the same; document it if the behaviour differs or it adds `@throws`.
+  - Private members, `detail` / anonymous-namespace helpers, tests and examples are exempt.
+- **Check:** `clang++ -std=c++17 -Iinclude -Wdocumentation -fsyntax-only <header>` flags `@param` names that don't match the signature.
 
 ### Abstract algebra (CRTP + virtual operations)
 

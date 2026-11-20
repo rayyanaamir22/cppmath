@@ -1,18 +1,20 @@
 #pragma once
+#include <stdexcept>
+#include <string>
 #include <vector>
+
+namespace cppmath {
+namespace linalg {
 
 /**
  * @class Matrix
- * @brief Represents a mathematical matrix with elements of type T.
+ * @brief A dense m x n matrix with entries of type T.
  *
  * This class provides basic matrix operations and is designed for extension (e.g., convolution, multiplication).
  * Storage is row-major in a flat vector for cache efficiency.
  *
  * @tparam T Numeric type (int, float, double, etc.)
  */
-namespace cppmath {
-namespace linalg {
-
 template<typename T>
 class Matrix {
 public:
@@ -25,7 +27,7 @@ public:
     Matrix(size_t rows, size_t cols);
 
     /**
-     * @brief Accesses the element at row i, column j (modifiable).
+     * @brief Accesses the element at row i, column j (modifiable). Not bounds-checked.
      * @param i Row index (0-based).
      * @param j Column index (0-based).
      * @return Reference to the element at (i, j).
@@ -33,7 +35,7 @@ public:
     T& operator()(size_t i, size_t j);
 
     /**
-     * @brief Accesses the element at row i, column j (read-only).
+     * @brief Accesses the element at row i, column j (read-only). Not bounds-checked.
      * @param i Row index (0-based).
      * @param j Column index (0-based).
      * @return Const reference to the element at (i, j).
@@ -51,10 +53,10 @@ public:
     size_t cols() const;
 
     /**
-     * @brief Multiplies this matrix by another matrix and returns the result.
-     *        Logs an error if dimensions are incompatible.
-     * @param other The matrix to multiply with.
-     * @return Resulting matrix after multiplication.
+     * @brief Matrix product (this * other), with the naive triple loop.
+     * @param other The matrix to multiply with; needs other.rows() == cols().
+     * @return A rows() x other.cols() matrix.
+     * @throws std::invalid_argument if cols() != other.rows().
      */
     Matrix<T> operator*(const Matrix<T>& other) const;
 
@@ -101,8 +103,9 @@ size_t Matrix<T>::cols() const { return m_cols; }
 template<typename T>
 Matrix<T> Matrix<T>::operator*(const Matrix<T>& other) const {
     if (m_cols != other.m_rows) {
-        // Optionally, throw or handle error
-        return Matrix<T>(0, 0);
+        throw std::invalid_argument("Matrix multiplication: " + std::to_string(m_rows) + "x" +
+                                    std::to_string(m_cols) + " cannot be multiplied by " +
+                                    std::to_string(other.m_rows) + "x" + std::to_string(other.m_cols));
     }
     Matrix<T> result(m_rows, other.m_cols);
     for (size_t i = 0; i < m_rows; ++i) {
